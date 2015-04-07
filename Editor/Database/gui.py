@@ -2,7 +2,7 @@ __author__ = 'Vincent'
 
 
 from Editor.Database.controller import Controller
-from Editor.Database.Database import Database
+from Editor.Database.database import Database
 
 from Editor.Component import Component
 

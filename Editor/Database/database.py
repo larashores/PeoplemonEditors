@@ -11,7 +11,29 @@ class Database(Component):
     def __init__(self,dataType):
         self.dataObjs = []
         self.dataType = dataType
+        self.sortFunc = self.sortByIDKey
 
+    def sort(self):
+        """
+        Sorts the database by using self.sortFunc
+        """
+        self.dataObjs.sort(key=self.sortFunc)
+
+    def changeSort(self):
+        """Swaps the type of sorting being used"""
+        if self.sortFunc == self.sortByIDKey:
+            self.sortFunc = self.sortByNameKey
+        elif self.sortFunc == self.sortByNameKey:
+            self.sortFunc = self.sortByIDKey
+        self.sort()
+
+    def sortByIDKey(self, obj):
+        """Function to help sort items by their ID"""
+        return obj.id
+
+    def sortByNameKey(self, obj):
+        """Function to help sort items by their name"""
+        return obj.name
 
     def add(self):
         """
@@ -19,8 +41,24 @@ class Database(Component):
         """
 
         obj = self.dataType()
+        obj.id = self.nextID()
         self.dataObjs.append(obj)
+        self.sort()
         return self.dataObjs.index(obj)
+
+    def getIDs(self):
+        """Gets a list of all IDs that are used in the database"""
+        ids = []
+        for obj in self.dataObjs:
+            ids.append(obj.id)
+        return ids
+
+    def nextID(self):
+        """Returns the next unused ID in the list"""
+        id = 0
+        while id in self.getIDs():
+            id += 1
+        return id
 
     def remove(self,ind):
         """
@@ -50,7 +88,12 @@ class Database(Component):
         :return:
         """
         ind = param.pop(0)
-        self.dataObjs[ind].update(param)
+        obj = self.dataObjs[ind]
+        if param[0] in self.getIDs() and obj.id != param[0]:
+            return False
+        obj.update(param)
+        self.sort()
+        return self.dataObjs.index(obj)
 
     def load(self):
         params = [len(self.dataObjs)]
@@ -61,10 +104,11 @@ class Database(Component):
     def fromByteArray(self,byteArray):
         db = self.__class__(self.dataType)
         numObjs = unpack(byteArray,'u16')
+        obj = self.dataType()
         for _ in range(numObjs):
-            obj = self.dataType()
             db.dataObjs.append(obj.fromByteArray(byteArray))
-
+        return db
+    
     def toByteArray(self):
         data = bytearray()
         pack(data,len(self.dataObjs),'u16')

@@ -11,6 +11,16 @@ class Controller():
         self.cur_ind = -1
         self.loadfuncs = [] #each func is passed the current index as an argument
 
+    def loadObj(self,ind):
+        return self.model.dataObjs[ind].load()
+
+    def changeSort(self):
+        """Changes the sort type of the database"""
+        self.model.changeSort()
+        if self.cur_ind == -1:
+            return
+        self.load()
+
     def up(self):
         """Moves the current index up"""
         if not self.cur_ind == 0:
@@ -63,6 +73,7 @@ class Controller():
         file.close()
         db = self.model.fromByteArray(data)
         self.model = db
+        self.load()
 
     def getStrings(self):
         """Get a list of strings representing all the objects"""
