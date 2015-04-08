@@ -9,6 +9,8 @@ class Component():
     """
     __metaclass__ = ABCMeta
 
+    def __init__(self):
+        self.paramDict = {}
 
     @abstractmethod
     def fromByteArray(self,byteArray):
@@ -29,21 +31,38 @@ class Component():
         """
         return bytearray()
 
-    @abstractmethod
-    def load(self):
+    def load(self,params,options=None):
         """
-        Returns all of the paramters involved in the component in a list
+        Lists any parameters requested
 
         :return:            List of values representing component
         """
-        return []
+        values = []
+        for param in params:
+            if param in self.paramDict:
+                values.append(self.paramDict[param])
+            else:
+                raise Exception('Unknown parameter')
+        return values
 
-    @abstractmethod
-    def update(self,param):
+    def update(self,paramdict,options=None):
         """
-        Takes list of paramters an updates the components data
+        Takes dictionary of paramters mapped to values and updates the components data
 
         :param param:      List of parameters with component data
         :return:
         """
+        for key,val in paramdict.items():
+            if not key in self.paramDict:
+                raise Exception('Invalid parameter')
+            self.paramDict[key] = val
+
+    def addParam(self,name,val):
+        """
+        Adds a parameter to the component
+        :param name: The name of the parameter
+        :param val:  The initial value of the parameter
+        :return:
+        """
+        self.paramDict[name] = val
 

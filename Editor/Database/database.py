@@ -9,6 +9,7 @@ class Database(Component):
     """
 
     def __init__(self,dataType):
+        Component.__init__(self)
         self.dataObjs = []
         self.dataType = dataType
         self.sortFunc = self.sortByIDKey
@@ -81,25 +82,28 @@ class Database(Component):
             lst.append(str(obj))
         return lst
 
-    def update(self,param):
+    def updateObject(self,ind,paramdict):
+        self.dataObjs[ind].update(paramdict)
+
+    def update(self,paramdict,options=None):
         """
         Updates a method from the component, the parameter should be the index to update, and then any paramters of that object
         :param param:
         :return:
         """
-        ind = param.pop(0)
+        if not options:
+            raise Exception("Bad index")
+        ind = options[0]
         obj = self.dataObjs[ind]
-        if param[0] in self.getIDs() and obj.id != param[0]:
-            return False
-        obj.update(param)
-        self.sort()
+        obj.update(paramdict)
         return self.dataObjs.index(obj)
 
-    def load(self):
-        params = [len(self.dataObjs)]
-        for obj in self.dataObjs:
-            params += obj.load()
-        return params
+    def load(self,params,options=None):
+        if not options:
+            raise Exception("Bad index")
+        ind = options[0]
+        obj = self.dataObjs[ind]
+        return obj.load(params)
 
     def fromByteArray(self,byteArray):
         db = self.__class__(self.dataType)

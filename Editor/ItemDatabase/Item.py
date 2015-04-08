@@ -5,37 +5,28 @@ from Editor.structreader import pack, unpack
 
 class Item(Component):
     def __init__(self):
-        self.id = 0
-        self.name = ''
-        self.desc = ''
+        Component.__init__(self)
+        self.addParam('id',0)
+        self.addParam('name','')
+        self.addParam('desc','')
 
     def __str__(self):
-        return 'id: {} | name: {} | desc: {}'.format(self.id,self.name,self.desc)
+        return 'id: {} | name: {} | desc: {}'.format(self.paramDict['id'],self.paramDict['name'],self.paramDict['desc'])
 
     def toByteArray(self):
         data = bytearray()
-        pack(data,self.id,'u16')
-        pack(data,self.name,'str')
-        pack(data,self.desc,'str')
+        pack(data,self.paramDict('id'),'u16')
+        pack(data,self.paramDict('name'),'str')
+        pack(data,self.paramDict('desc'),'str')
         return data
 
     def fromByteArray(self,byteArray):
         item = Item()
-        item.id = unpack(byteArray,'u16')
-        item.name = unpack(byteArray,'str')
-        item.desc = unpack(byteArray,'str')
+        item.update('id', unpack(byteArray,'u16'))
+        item.update('name', unpack(byteArray,'str'))
+        item.update('desc', unpack(byteArray,'str'))
         return item
 
-    def load(self):
-        return [self.id,self.name,self.desc]
-
-    def update(self,param):
-        if len(param) > 3:
-            raise Exception("Too many paramaters")
-        else:
-            self.id = param[0]
-            self.name = param[1]
-            self.desc = param[2]
 
 if __name__ == '__main__':
 

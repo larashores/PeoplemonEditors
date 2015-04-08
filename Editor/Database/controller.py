@@ -11,8 +11,7 @@ class Controller():
         self.cur_ind = -1
         self.loadfuncs = [] #each func is passed the current index as an argument
 
-    def loadObj(self,ind):
-        return self.model.dataObjs[ind].load()
+
 
     def changeSort(self):
         """Changes the sort type of the database"""
