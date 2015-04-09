@@ -3,7 +3,7 @@ __author__ = 'Vincent'
 from Editor.Database.controller import Controller
 
 class ItemController(Controller):
-    def update(self,param):
+    def update(self,param,options=[]):
         '''Updates the model and loads the view'''
         success = self.model.update({'id':param[0],'name':param[1],'desc':param[2]},[self.cur_ind])
         if success is False:

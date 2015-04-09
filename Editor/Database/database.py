@@ -93,17 +93,17 @@ class Database(Component):
         """
         if not options:
             raise Exception("Bad index")
-        ind = options[0]
+        ind = options.pop(0)
         obj = self.dataObjs[ind]
-        obj.update(paramdict)
+        obj.update(paramdict,options)
         return self.dataObjs.index(obj)
 
-    def load(self,params,options=None):
+    def load(self,params,options=list()):
         if not options:
             raise Exception("Bad index")
-        ind = options[0]
+        ind = options.pop(0)
         obj = self.dataObjs[ind]
-        return obj.load(params)
+        return obj.load(params,options)
 
     def fromByteArray(self,byteArray):
         db = self.__class__(self.dataType)

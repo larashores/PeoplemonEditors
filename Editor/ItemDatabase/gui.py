@@ -34,7 +34,7 @@ class ItemEditor(Frame):
         Label(self,text='Description').pack()
         self.desc = Text(self,height=10,width=45)
         self.desc.pack()
-        Button(self,text='Apply',command=self.apply).pack()
+        Button(self,text='Apply',command=self.apply).pack(side=BOTTOM)
         name.bind('<Return>', lambda x: self.apply())
         self.desc.bind('<Return>', lambda x: self.apply())
     def apply(self):

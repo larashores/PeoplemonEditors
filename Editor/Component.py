@@ -42,7 +42,7 @@ class Component():
             if param in self.paramDict.keys():
                 values.append(self.paramDict[param])
             else:
-                raise Exception('Unknown parameter')
+                raise Exception('Unknown parameter '+str(param)+' ' + str(type(self)))
         return values
 
     def update(self,paramdict,options=None):

@@ -51,7 +51,7 @@ class ObjList(Frame):
                                up_cmd    = self.up,
                                down_cmd  = self.down,
                                width     = 50)
-        self.list.pack(expand=YES,fill=X)
+        self.list.pack(expand=YES,fill=BOTH)
         Button(self,text='Add New',command=self.add).pack(pady=(5,0))
         Barrier(self).pack(fill=X,pady=(10,0),padx=(20,20))
     def choose(self,ind):
