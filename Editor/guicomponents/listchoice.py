@@ -59,7 +59,14 @@ class ListChoiceGUI(Frame):
         ind = self.lbox.curselection()[0]
         self.delete_cmd(ind)
     def click(self):
-        self.after(20,lambda: self.click_cmd(int(self.lbox.curselection()[0])))
+        self.after(20,self._click)
+    def _click(self):
+        val = self.lbox.curselection()
+        if len(val) != 1:
+            self.click_cmd(-1)
+        else:
+            self.click_cmd(int(val[0]))
+
     def up(self):
         self.after(20,lambda: self.up_cmd())
     def down(self):
