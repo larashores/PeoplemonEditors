@@ -10,6 +10,7 @@ class Controller():
         self.model   = dataBaseType(dataType)  #Should have a Database Object attached
         self.cur_ind = -1
         self.loadfuncs = [] #each func is passed the current index as an argument
+        self.applyfuncs = []
         self.sorts = [("Sort by ID",self.changeSort),("Sort by Name",self.changeSort)]
 
 
@@ -58,6 +59,12 @@ class Controller():
         """Loads all components"""
         for func in self.loadfuncs:
             func(self.cur_ind)
+
+    def apply(self):
+        for func in self.applyfuncs:
+            print('Running', func)
+            func()
+        self.load()
 
     def saveToFile(self,path):
         """Saves the model to 'path' """

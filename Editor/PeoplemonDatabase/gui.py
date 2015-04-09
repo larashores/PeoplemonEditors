@@ -25,6 +25,7 @@ class PeoplemonEditor(Frame):
         Frame.__init__(self)
         self.controller = controller
         self.controller.loadfuncs.append(self.load)
+        self.controller.applyfuncs.append(self.apply)
         self.baseStatVars = []
         self.evAwardVars = []
 
@@ -76,38 +77,23 @@ class PeoplemonEditor(Frame):
     def loadStat(self,statVars,stats):
         for stat,var in zip(stats,statVars):
             var.set(stat)
-
-
-
-class ItemEditor2(ItemEditor):
-    def __init__(self,parent,controller,peoplemonediotr,root):
-        ItemEditor.__init__(self,parent,controller)
-        self.peoplemoneditor = peoplemonediotr
-        self.root = root
     def apply(self):
-        success = self.controller.update(   {'id': self.id_var.get(),
-                                             'name': self.name_var.get(),
-                                             'desc': self.desc.get(1.0, END),
-                                             'type': self.peoplemoneditor.typeVar.get(),
-                                             'specialAbilityId': self.peoplemoneditor.specialIDVar.get(),
-                                             'evolveLevel': self.peoplemoneditor.evolveLevelVar.get(),
-                                             'evolveID': self.peoplemoneditor.evolveIDVar.get() })
+        self.controller.update(   {'type': self.typeVar.get(),
+                                             'specialAbilityId': self.specialIDVar.get(),
+                                             'evolveLevel': self.evolveLevelVar.get(),
+                                             'evolveID': self.evolveIDVar.get() })
         stats = {}
 
-        for ind,var in enumerate(self.peoplemoneditor.baseStatVars):
-            self.root.update()
+        for ind,var in enumerate(self.baseStatVars):
             stats[BaseStats.stats[ind]] = var.get()
         self.controller.update(stats,['baseStats'])
 
         stats = {}
-        for ind,var in enumerate(self.peoplemoneditor.evAwardVars):
+        for ind,var in enumerate(self.evAwardVars):
             stats[BaseStats.stats[ind]] = var.get()
         self.controller.update(stats,['evAwards'])
 
-        if success is False:
-            #showerror(title='Error',message='ID Already Taken')
-            pass
-        self.controller.load()
+
 
 
 if __name__ == '__main__':
@@ -146,7 +132,7 @@ if __name__ == '__main__':
     edit = Editor(root,control)
     edit.pack(side=LEFT,expand=YES,fill=BOTH)
 
-    item = ItemEditor2(edit,control,peoplemon,root)
+    item = ItemEditor(edit,control)
     item.pack()
 
 

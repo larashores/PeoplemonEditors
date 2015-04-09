@@ -20,6 +20,7 @@ class ItemEditor(Frame):
         Frame.__init__(self,parent)
         self.controller = controller
         self.controller.loadfuncs.append(self.load)
+        self.controller.applyfuncs.append(self.apply)
         frm = Frame(self)
         frm.pack()
         self.id_var = IntVar()
@@ -34,23 +35,22 @@ class ItemEditor(Frame):
         Label(self,text='Description').pack()
         self.desc = Text(self,height=10,width=45)
         self.desc.pack()
-        Button(self,text='Apply',command=self.apply).pack(side=BOTTOM)
+        Button(self,text='Apply',command=self.controller.apply).pack(side=BOTTOM)
         name.bind('<Return>', lambda x: self.apply())
         self.desc.bind('<Return>', lambda x: self.apply())
     def apply(self):
-        success = self.controller.update(
-                                         [self.id_var.get(),
-                                          self.name_var.get(),
-                                          self.desc.get(1.0, END)] )
+        success = self.controller.update( {'id': self.id_var.get(),
+                                           'name': self.name_var.get(),
+                                           'desc': self.desc.get(1.0, END)} )
         if success is False:
             showerror(title='Error',message='ID Already Taken')
-            self.controller.load()
+        self.controller.load()
     def load(self,ind):
         attrs = self.controller.loadObj(ind)
         self.id_var.set(attrs[0])
         self.name_var.set(attrs[1])
         self.desc.delete('1.0',END)
-        self.desc.insert(END,attrs[2])
+        self.desc.insert(END,attrs[2][:-1])
 
 if __name__ == '__main__':
     root = Tk()
