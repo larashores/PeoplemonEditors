@@ -34,7 +34,7 @@ class ObjList(Frame):
         self.controller = controller
         self.controller.loadfuncs.append(self.load)
         frm = Frame(self)
-        frm.pack(expand=YES,fill=X)
+        frm.pack()
         self.val = IntVar()
         if hasattr(controller, 'sorts'):
             for ind,(name, func) in enumerate(controller.sorts):
@@ -55,6 +55,8 @@ class ObjList(Frame):
         Button(self,text='Add New',command=self.add).pack(pady=(5,0))
         Barrier(self).pack(fill=X,pady=(10,0),padx=(20,20))
     def choose(self,ind):
+        if ind == -1:
+            return
         self.controller.click(ind)
     def up(self):
         self.controller.up()

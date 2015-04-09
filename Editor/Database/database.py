@@ -30,11 +30,11 @@ class Database(Component):
 
     def sortByIDKey(self, obj):
         """Function to help sort items by their ID"""
-        return obj.id
+        return obj.load( ['id'] )[0]
 
     def sortByNameKey(self, obj):
         """Function to help sort items by their name"""
-        return obj.name
+        return obj.load( ['name'] )[0]
 
     def add(self):
         """
@@ -42,7 +42,7 @@ class Database(Component):
         """
 
         obj = self.dataType()
-        obj.id = self.nextID()
+        obj.update({'id':self.nextID()})
         self.dataObjs.append(obj)
         self.sort()
         return self.dataObjs.index(obj)
@@ -51,7 +51,7 @@ class Database(Component):
         """Gets a list of all IDs that are used in the database"""
         ids = []
         for obj in self.dataObjs:
-            ids.append(obj.id)
+            ids.append(obj.load(['id'])[0])
         return ids
 
     def nextID(self):

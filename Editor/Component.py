@@ -39,7 +39,7 @@ class Component():
         """
         values = []
         for param in params:
-            if param in self.paramDict:
+            if param in self.paramDict.keys():
                 values.append(self.paramDict[param])
             else:
                 raise Exception('Unknown parameter')

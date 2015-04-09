@@ -10,6 +10,7 @@ class Controller():
         self.model   = dataBaseType(dataType)  #Should have a Database Object attached
         self.cur_ind = -1
         self.loadfuncs = [] #each func is passed the current index as an argument
+        self.sorts = [("Sort by Name",self.changeSort),("Sort by ID",self.changeSort)]
 
 
 
