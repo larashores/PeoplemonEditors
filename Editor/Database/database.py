@@ -97,6 +97,10 @@ class Database(Component):
             raise Exception("Bad index")
         ind = options.pop(0)
         obj = self.dataObjs[ind]
+        if 'id' in paramdict.keys():
+            id = paramdict['id']
+            if id != obj.paramDict['id'] and (id in self.getIDs()):
+                return False
         obj.update(paramdict,options)
         return self.dataObjs.index(obj)
 
@@ -104,8 +108,11 @@ class Database(Component):
         if not options:
             raise Exception("Bad index")
         ind = options.pop(0)
-
-        obj = self.dataObjs[ind]
+        try:
+            obj = self.dataObjs[ind]
+        except:
+            print('caught exception')
+            return
         return obj.load(params,options)
 
     def fromByteArray(self,byteArray):

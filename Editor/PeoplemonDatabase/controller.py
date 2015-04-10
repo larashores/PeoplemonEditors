@@ -27,7 +27,6 @@ class PeoplemonController(ItemController):
 
 
     def changeMoves(self,ind):
-        print(self.model.dataObjs[self.cur_ind].validMoves)
         self.validController.model = self.model.dataObjs[ind].validMoves
         self.learnController.model = self.model.dataObjs[ind].learnMoves
         self.validController.load()
@@ -49,3 +48,6 @@ class MoveController(ItemController):
 
     def apply(self):
         ItemController.apply(self)
+
+    def loadStuff(self,ind,params):
+        return self.model.load(params,[ind])

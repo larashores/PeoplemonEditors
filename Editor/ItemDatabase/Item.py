@@ -15,16 +15,18 @@ class Item(Component):
 
     def toByteArray(self):
         data = bytearray()
-        pack(data,self.paramDict('id'),'u16')
-        pack(data,self.paramDict('name'),'str')
-        pack(data,self.paramDict('desc'),'str')
+        pack(data,self.paramDict['id'],'u16')
+        pack(data,self.paramDict['name'],'str')
+        pack(data,self.paramDict['desc'],'str')
         return data
 
     def fromByteArray(self,byteArray):
         item = Item()
-        item.update('id', unpack(byteArray,'u16'))
-        item.update('name', unpack(byteArray,'str'))
-        item.update('desc', unpack(byteArray,'str'))
+        id = unpack(byteArray,'u16')
+        print(id)
+        item.update({'id': id})
+        item.update({'name': unpack(byteArray,'str')})
+        item.update({'desc': unpack(byteArray,'str')})
         return item
 
 

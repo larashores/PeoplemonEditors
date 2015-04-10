@@ -41,13 +41,8 @@ class Peoplemon(Component):
         pack(data,self.paramDict['specialAbilityId'],'u8')
         data += self.baseStats.toByteArray()
 
-        pack(data,len(self.paramDict['validMoves']),'u8')
-        for move in self.paramDict['validMoves']:
-            pack(data,move,'u8')
-        pack(data,len(self.paramDict['learnMoves']),'u16')
-        for level,move in self.paramDict['learnMoves']:
-            pack(data,level,'u8')
-            pack(data,move,'u16')
+        data += self.validMoves.toByteArray()
+        data += self.learnMoves.toByteArray()
 
         pack(data,self.paramDict['evolveLevel'],'u8')
         pack(data,self.paramDict['evolveID'], 'u8')
@@ -92,6 +87,7 @@ class BaseStats(Component):
     def toByteArray(self):
         data = bytearray()
         for stat in self.stats:
+            print(stat,self.paramDict[stat])
             pack(data,self.paramDict[stat],'u16')
         return data
 

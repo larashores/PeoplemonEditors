@@ -82,6 +82,7 @@ class Controller():
         file = open(path,'rb')
         data = bytearray(file.read())
         file.close()
+
         db = self.model.fromByteArray(data)
         self.model = db
         self.load()

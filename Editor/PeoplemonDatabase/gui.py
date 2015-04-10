@@ -11,6 +11,7 @@ from Editor.guicomponents.entrylabel import EntryLabel
 from Editor.PeoplemonDatabase.Peoplemon import BaseStats
 
 from tkinter import *
+from tkinter.messagebox import showerror
 
 import time
 
@@ -75,11 +76,12 @@ class PeoplemonEditor(Frame):
         EntryLabel(nextfrm,text='Move ID',textvariable = self.learnMoveIDVar).pack(side=LEFT)
         EntryLabel(nextfrm,text='Learn level',textvariable = self.learnMoveLevelVar).pack(side=LEFT)
         Button(learnFrm,text='Apply',command=self.applylearnMove).pack()
-
+        self.controller.learnController.loadfuncs.append(self.loadLearnMove)
 
         ValidMoveList(validFrm, controller.validController).pack()
         EntryLabel(validFrm,text='Move ID',textvariable = self.validMoveIDVar).pack()
         Button(validFrm,text='Apply',command=self.applyValidMove).pack()
+        self.controller.validController.loadfuncs.append(self.loadValidMove)
     def makeStats(self,frame,text,varList):
         frm = Frame(frame,bd=3,relief=GROOVE)
         frm.pack()
@@ -130,12 +132,34 @@ class PeoplemonEditor(Frame):
         self.controller.update(stats,['evAwards'])
 
     def applylearnMove(self):
-        self.controller.learnController.update({'id': self.learnMoveIDVar.get(),
+        success = self.controller.learnController.update({'id': self.learnMoveIDVar.get(),
                                 'level': self.learnMoveLevelVar.get()})
+        if success is False:
+            showerror(title='Error',message='ID Already Taken')
         self.controller.learnController.load()
     def applyValidMove(self):
-        self.controller.validController.update({'id': self.validMoveIDVar.get()},['validMove'])
+        success = self.controller.validController.update({'id': self.validMoveIDVar.get()},['validMove'])
+        if success is False:
+            showerror(title='Error',message='ID Already Taken')
         self.controller.validController.load()
+    def loadLearnMove(self,ind):
+        if ind == -1:
+            return
+        params = self.controller.learnController.loadStuff(ind,['id','level'])
+        if params == None:
+            self.learnMoveIDVar.set(0)
+            self.learnMoveLevelVar.set(0)
+            return
+        self.learnMoveIDVar.set(params[0])
+        self.learnMoveLevelVar.set(params[1])
+    def loadValidMove(self,ind):
+        if ind == -1:
+            return
+        params = self.controller.validController.loadStuff(ind,['id'])
+        if params == None:
+            self.validMoveIDVar.set(0)
+            return
+        self.validMoveIDVar.set(params[0])
 
 
 
