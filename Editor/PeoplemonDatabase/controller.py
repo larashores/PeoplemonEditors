@@ -41,6 +41,11 @@ class PeoplemonController(ItemController):
     def loadPeoplemon(self,ind,params,options=list()):
         return self.model.load(params,[ind]+options)
 
+    def loadFromFile(self,path):
+        ItemController.loadFromFile(self,path)
+        if len(self.model.dataObjs) != 0:
+            self.cur_ind = 0
+            self.click(0)
 
 class MoveController(ItemController):
     def __init__(self,database):

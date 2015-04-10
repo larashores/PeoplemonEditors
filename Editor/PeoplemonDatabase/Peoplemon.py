@@ -30,7 +30,22 @@ class Peoplemon(Component):
         return Item.__str__(self)
 
     def fromByteArray(self,byteArray):
-        return Component()
+        people = Peoplemon()
+        people.paramDict['id'] = unpack(byteArray,'u16')
+        people.paramDict['name'] = unpack(byteArray,'str')
+        people.paramDict['desc'] = unpack(byteArray,'str')
+        people.paramDict['type'] = unpack(byteArray,'u8')
+        people.paramDict['specialAbilityId'] = unpack(byteArray,'u8')
+
+        people.baseStats = self.baseStats.fromByteArray(byteArray)
+        db = Database(ValidMove)
+        people.validMoves = db.fromByteArray(byteArray)
+        db = Database(LearnMove)
+        people.learnMoves= db.fromByteArray(byteArray)
+        people.paramDict['evolveLevel'] = unpack(byteArray,'u8')
+        people.paramDict['evolveID'] = unpack(byteArray,'u8')
+        people.evAwards = self.evAwards.fromByteArray(byteArray)
+        return people
 
     def toByteArray(self):
         data = bytearray()
