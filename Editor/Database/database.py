@@ -24,7 +24,9 @@ class Database(Component):
 
     def changeSort(self):
         """Swaps the type of sorting being used"""
+        print('changing')
         if self.sortFunc == self.sortByIDKey:
+            print('now name')
             self.sortFunc = self.sortByNameKey
         elif self.sortFunc == self.sortByNameKey:
             self.sortFunc = self.sortByIDKey
@@ -36,7 +38,7 @@ class Database(Component):
 
     def sortByNameKey(self, obj):
         """Function to help sort items by their name"""
-        return obj.load( ['name'] )[0]
+        return obj.load( ['name'] )[0].lower()
 
     def add(self):
         """

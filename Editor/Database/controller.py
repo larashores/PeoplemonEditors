@@ -68,6 +68,7 @@ class Controller():
             return
         for func in self.applyfuncs:
             func()
+        self.model.sort()
         self.load()
 
     def saveToFile(self,path):
@@ -85,7 +86,6 @@ class Controller():
 
         db = self.model.fromByteArray(data)
         self.model = db
-        self.load()
 
     def getStrings(self):
         """Get a list of strings representing all the objects"""
