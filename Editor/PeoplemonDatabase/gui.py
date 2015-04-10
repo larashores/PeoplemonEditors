@@ -1,11 +1,11 @@
 __author__ = 'Vincent'
 
 from Editor.PeoplemonDatabase.controller import PeoplemonController
-from Editor.PeoplemonDatabase.Peoplemon import Peoplemon
+from Editor.PeoplemonDatabase.Peoplemon import Peoplemon, LearnMove, ValidMove
 
 from Editor.ItemDatabase.gui import ItemEditor
 from Editor.Database.database import Database
-from Editor.Database.gui import EditorMenu,Editor
+from Editor.Database.gui import EditorMenu,Editor, ObjList
 
 from Editor.guicomponents.entrylabel import EntryLabel
 from Editor.PeoplemonDatabase.Peoplemon import BaseStats
@@ -17,6 +17,18 @@ import time
 TITLE_NAME = 'Item Database Editor'
 TITLE_FONT = ('tkdefaultfont',16,'bold')
 
+
+class LearnMoveList(ObjList):
+    pass
+    '''def add(self):
+        self.controller.addLearnMove()
+        self.list.setPosition(1.0)'''
+
+class ValidMoveList(ObjList):
+    pass
+    '''def add(self):
+        self.controller.addValidMove()
+        self.list.setPosition(1.0)'''
 
 class PeoplemonEditor(Frame):
     STATS = 'HP','Attack','Defense','Accuracy','Evade','Speed','Critical','Sp. Attack','Sp. Defense'
@@ -40,12 +52,34 @@ class PeoplemonEditor(Frame):
         self.evolveIDVar = IntVar()
         EntryLabel(topfrm,text="Evolve ID",textvariable=self.evolveIDVar).pack(side=LEFT,padx=(3,6),pady=(0,8))
 
-        basefrm = Frame(self)
-        awardfrm = Frame(self)
+        nxtfrm = Frame(self)
+        nxtfrm.pack()
+        basefrm = Frame(nxtfrm)
+        awardfrm = Frame(nxtfrm)
         basefrm.pack(side=LEFT)
         awardfrm.pack(side=LEFT)
         self.makeStats(basefrm,'Base Stats',self.baseStatVars)
         self.makeStats(awardfrm,'EV Awards',self.evAwardVars)
+
+
+        learnFrm = Frame(self)
+        validFrm = Frame(self)
+        learnFrm.pack(side=LEFT)
+        validFrm.pack(side=LEFT)
+        LearnMoveList(learnFrm, controller.learnController).pack()
+        nextfrm = Frame(learnFrm)
+        nextfrm.pack()
+        self.learnMoveLevelVar = IntVar()
+        self.learnMoveIDVar = IntVar()
+        self.validMoveIDVar = IntVar()
+        EntryLabel(nextfrm,text='Move ID',textvariable = self.learnMoveIDVar).pack(side=LEFT)
+        EntryLabel(nextfrm,text='Learn level',textvariable = self.learnMoveLevelVar).pack(side=LEFT)
+        Button(learnFrm,text='Apply',command=self.applylearnMove).pack()
+
+
+        ValidMoveList(validFrm, controller.validController).pack()
+        EntryLabel(validFrm,text='Move ID',textvariable = self.validMoveIDVar).pack()
+        Button(validFrm,text='Apply',command=self.applyValidMove).pack()
     def makeStats(self,frame,text,varList):
         frm = Frame(frame,bd=3,relief=GROOVE)
         frm.pack()
@@ -69,6 +103,8 @@ class PeoplemonEditor(Frame):
                 label = EntryLabel(frm,text=stat,textvariable = var)
                 label.pack(side=BOTTOM,pady=(0,5))
     def load(self,ind):
+        if ind == -1:
+            return
         vals = self.controller.loadPeoplemon(ind,['type','specialAbilityId','evolveLevel','evolveID'])
         for val,var in zip(vals,(self.typeVar,self.specialIDVar,self.evolveLevelVar,self.evolveIDVar)):
             var.set(val)
@@ -92,6 +128,14 @@ class PeoplemonEditor(Frame):
         for ind,var in enumerate(self.evAwardVars):
             stats[BaseStats.stats[ind]] = var.get()
         self.controller.update(stats,['evAwards'])
+
+    def applylearnMove(self):
+        self.controller.learnController.update({'id': self.learnMoveIDVar.get(),
+                                'level': self.learnMoveLevelVar.get()})
+        self.controller.learnController.load()
+    def applyValidMove(self):
+        self.controller.validController.update({'id': self.validMoveIDVar.get()},['validMove'])
+        self.controller.validController.load()
 
 
 
@@ -124,7 +168,8 @@ if __name__ == '__main__':
 
     root = Tk()
     root.title("Sex is real and it affects the future")
-    control = PeoplemonController(Database,Peoplemon)
+    control = PeoplemonController(Database(Peoplemon))
+
     menu = EditorMenu(control)
     root.config(menu=menu)
     peoplemon = PeoplemonEditor(root,control)

@@ -3,6 +3,8 @@ __author__ = 'Vincent'
 from Editor.Component import Component
 from Editor.structreader import pack, unpack
 
+import inspect
+
 class Database(Component):
     """
     Represents a database
@@ -102,6 +104,7 @@ class Database(Component):
         if not options:
             raise Exception("Bad index")
         ind = options.pop(0)
+
         obj = self.dataObjs[ind]
         return obj.load(params,options)
 

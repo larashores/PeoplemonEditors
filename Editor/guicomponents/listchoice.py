@@ -56,8 +56,7 @@ class ListChoiceGUI(Frame):
         self.sbar = sbar
         self.hsbar = hsbar
     def delete(self):
-        ind = self.lbox.curselection()[0]
-        self.delete_cmd(ind)
+        self.delete_cmd()
     def click(self):
         self.after(20,self._click)
     def _click(self):

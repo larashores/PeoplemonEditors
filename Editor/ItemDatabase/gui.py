@@ -46,6 +46,11 @@ class ItemEditor(Frame):
             showerror(title='Error',message='ID Already Taken')
         self.controller.load()
     def load(self,ind):
+        if ind == -1:
+            self.name_var.set('')
+            self.id_var.set(0)
+            self.desc.delete('1.0',END)
+            return
         attrs = self.controller.loadObj(ind)
         self.id_var.set(attrs[0])
         self.name_var.set(attrs[1])
@@ -55,7 +60,7 @@ class ItemEditor(Frame):
 if __name__ == '__main__':
     root = Tk()
     root.title("Sex is real and it affects the future")
-    control = ItemController(Database,Item)
+    control = ItemController(Database(Item))
     menu = EditorMenu(control)
     root.config(menu=menu)
     edit = Editor(root,control)

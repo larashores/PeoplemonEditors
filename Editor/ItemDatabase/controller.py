@@ -1,5 +1,7 @@
 __author__ = 'Vincent'
 
+import inspect
+
 from Editor.Database.controller import Controller
 
 class ItemController(Controller):
@@ -10,4 +12,4 @@ class ItemController(Controller):
             return False
 
     def loadObj(self,ind):
-        return self.model.dataObjs[ind].load( ["id","name","desc"] )
+        return self.model.load( ["id","name","desc"], [ind])

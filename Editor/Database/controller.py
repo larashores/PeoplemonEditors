@@ -1,19 +1,24 @@
 __author__ = 'Vincent'
 
 from abc import ABCMeta, abstractmethod, abstractstaticmethod
+import inspect
 
 class Controller():
 
     __metaclass__ = ABCMeta
 
-    def __init__(self,dataBaseType,dataType):
-        self.model   = dataBaseType(dataType)  #Should have a Database Object attached
+    def __init__(self,dataBase):
+        self.model   = dataBase  #Should have a Database Object attached
         self.cur_ind = -1
         self.loadfuncs = [] #each func is passed the current index as an argument
         self.applyfuncs = []
         self.sorts = [("Sort by ID",self.changeSort),("Sort by Name",self.changeSort)]
 
-
+    def update(self,paramdict,options=list()):
+        '''Updates the model and loads the view'''
+        success = self.model.update(paramdict,[self.cur_ind])
+        if success is False:
+            return False
 
     def changeSort(self):
         """Changes the sort type of the database"""
@@ -45,14 +50,12 @@ class Controller():
         self.cur_ind = ind
         self.load()
 
-    def delObj(self,ind):
+    def delObj(self):
         """Deletes an object from the database"""
-        if ind < 0:
+        if self.cur_ind == -1:
             return
-        self.model.remove(ind)
+        self.model.remove(self.cur_ind)
         self.cur_ind -= 1
-        if self.cur_ind <0:
-            self.cur_ind = 0
         self.load()
 
     def load(self):
@@ -61,8 +64,9 @@ class Controller():
             func(self.cur_ind)
 
     def apply(self):
+        if self.cur_ind == -1:
+            return
         for func in self.applyfuncs:
-            print('Running', func)
             func()
         self.load()
 

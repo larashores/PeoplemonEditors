@@ -1,6 +1,7 @@
 __author__ = 'Vincent'
 
 from Editor.Component import Component
+from Editor.Database.database import Database
 from Editor.structreader import pack, unpack
 from Editor.ItemDatabase.Item import Item
 
@@ -19,6 +20,8 @@ class Peoplemon(Component):
         self.addParam('evolveLevel', 0)
         self.addParam('evolveID', 0)
         self.evAwards = EVAwards()
+        self.validMoves = Database(ValidMove)
+        self.learnMoves = Database(LearnMove)
 
     def __str__(self):
         return Item.__str__(self)
@@ -94,3 +97,40 @@ class BaseStats(Component):
 
 class EVAwards(BaseStats):
     pass
+
+class ValidMove(Component):
+    def __init__(self):
+        Component.__init__(self)
+        self.addParam('id',0)
+    def __str__(self):
+        return 'Move ID: {}'.format(self.paramDict['id'])
+    def fromByteArray(self,byteArray):
+        learnMove = ValidMove()
+        learnMove.paramDict['id'] = unpack(byteArray,'u16')
+        return learnMove
+
+    def toByteArray(self):
+        data = bytearray()
+        pack(data,self.paramDict['id'],'u16')
+        return data
+
+class LearnMove(Component):
+    def __init__(self):
+        Component.__init__(self)
+        self.addParam('level',0)
+        self.addParam('id',0)
+
+    def __str__(self):
+        return 'Move ID: {} | Learn level: {}'.format(self.paramDict['id'],self.paramDict['level'])
+
+    def fromByteArray(self,byteArray):
+        learnMove = LearnMove()
+        learnMove.paramDict['level'] = unpack(byteArray,'u8')
+        learnMove.paramDict['id'] = unpack(byteArray,'u16')
+        return learnMove
+
+    def toByteArray(self):
+        data = bytearray()
+        pack(data,self.paramDict['level'],'u8')
+        pack(data,self.paramDict['id'],'u16')
+        return data

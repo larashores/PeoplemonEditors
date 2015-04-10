@@ -25,14 +25,6 @@ class Editor(Frame):
     def __init__(self,parent,controller):
         Frame.__init__(self,parent)
         Label(self,text=TITLE_NAME,font=TITLE_FONT).pack()
-        self.list = ObjList(self,controller)
-        self.list.pack(expand=YES,fill=X)
-
-class ObjList(Frame):
-    def __init__(self,parent,controller):
-        Frame.__init__(self,parent)
-        self.controller = controller
-        self.controller.loadfuncs.append(self.load)
         frm = Frame(self)
         frm.pack()
         self.val = IntVar()
@@ -43,8 +35,16 @@ class ObjList(Frame):
                             variable = self.val,
                             value = ind,
                            command = lambda: controller.changeSort()).pack(side=LEFT)
+        self.list = ObjList(self,controller)
+        self.list.pack(expand=YES,fill=X)
+        Barrier(self).pack(fill=X,pady=(10,0),padx=(20,20))
 
-        self.val.set(0)
+class ObjList(Frame):
+    def __init__(self,parent,controller):
+        Frame.__init__(self,parent)
+        self.controller = controller
+        self.controller.loadfuncs.append(self.load)
+
         self.list = ListChoice(self,
                                click_cmd = self.choose,
                                delete_cmd= self.delete,
@@ -53,7 +53,6 @@ class ObjList(Frame):
                                width     = 50)
         self.list.pack(expand=YES,fill=BOTH)
         Button(self,text='Add New',command=self.add).pack(pady=(5,0))
-        Barrier(self).pack(fill=X,pady=(10,0),padx=(20,20))
     def choose(self,ind):
         if ind == -1:
             return
@@ -62,18 +61,22 @@ class ObjList(Frame):
         self.controller.up()
     def down(self):
         self.controller.down()
-    def delete(self,ind_lst):
-        self.controller.delObj(int(ind_lst))
+    def delete(self):
+        self.controller.delObj()
     def add(self):
         self.controller.addObj()
         self.list.setPosition(1.0)      #Moves to end
     def load(self,ind):
         pos = self.list.getPosition()
+        self.updateView()
+        if ind == -1:
+            return
+        self.list.setSelection(ind)
+        self.list.setPosition(pos)
+    def updateView(self):
         self.list.clear()
         for string in self.controller.getStrings():
             self.list.addChoice(string)
-        self.list.setSelection(ind)
-        self.list.setPosition(pos)
 
 class EditorMenu(Menu):
     def __init__(self,controller):
