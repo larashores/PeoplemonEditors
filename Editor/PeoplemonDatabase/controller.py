@@ -42,11 +42,12 @@ class PeoplemonController(ItemController):
         return self.model.load(params,[ind]+options)
 
     def loadFromFile(self,path):
+        self.cur_ind = 0
         ItemController.loadFromFile(self,path)
         if len(self.model.dataObjs) != 0:
             self.cur_ind = 0
             self.click(0)
-        self.load()
+
 
 class MoveController(ItemController):
     def __init__(self,database):

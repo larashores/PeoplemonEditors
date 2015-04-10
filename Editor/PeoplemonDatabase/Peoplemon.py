@@ -102,7 +102,6 @@ class BaseStats(Component):
     def toByteArray(self):
         data = bytearray()
         for stat in self.stats:
-            print(stat,self.paramDict[stat])
             pack(data,self.paramDict[stat],'u16')
         return data
 

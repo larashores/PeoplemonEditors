@@ -108,7 +108,6 @@ class PeoplemonEditor(Frame):
         if ind == -1:
             return
         vals = self.controller.loadPeoplemon(ind,['type','specialAbilityId','evolveLevel','evolveID'])
-        print('values ', vals)
         for val,var in zip(vals,(self.typeVar,self.specialIDVar,self.evolveLevelVar,self.evolveIDVar)):
             var.set(val)
         self.loadStat(self.baseStatVars,self.controller.loadPeoplemon(ind,BaseStats.stats,['baseStats']))
@@ -166,30 +165,6 @@ class PeoplemonEditor(Frame):
 
 
 if __name__ == '__main__':
-
-    '''class Outer(Frame):
-        def __init__(self,parent):
-            Frame.__init__(self,parent)
-            self.var = IntVar()
-            Entry(self,textvariable=self.var).pack()
-            Button(self,text='Outer Test',command=self.getVar).pack()
-        def getVar(self):
-            print(self.var.get())
-
-    class Inner(Frame):
-        def __init__(self,outer):
-            Frame.__init__(self)
-            self.outer=outer
-            Button(self,text='Inner Test',command=self.getVar).pack()
-        def getVar(self):
-            print(self.outer.var.get())
-
-    root = Tk()
-    out = Outer(root)
-    out.pack()
-    inn = Inner(out)
-    inn.pack()
-    root.mainloop()'''
 
     root = Tk()
     root.title("Sex is real and it affects the future")

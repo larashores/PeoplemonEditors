@@ -13,7 +13,3 @@ class ItemController(Controller):
 
     def loadObj(self,ind):
         return self.model.load( ["id","name","desc"], [ind])
-
-    def loadFromFile(self,path):
-        Controller.loadFromFile(self,path)
-        self.load()

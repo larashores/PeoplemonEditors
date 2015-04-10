@@ -86,6 +86,7 @@ class Controller():
 
         db = self.model.fromByteArray(data)
         self.model = db
+        self.load()
 
     def getStrings(self):
         """Get a list of strings representing all the objects"""

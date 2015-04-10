@@ -113,7 +113,6 @@ class Database(Component):
         try:
             obj = self.dataObjs[ind]
         except:
-            print('caught exception')
             return
         return obj.load(params,options)
 
