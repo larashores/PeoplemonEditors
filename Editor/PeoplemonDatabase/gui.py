@@ -108,6 +108,7 @@ class PeoplemonEditor(Frame):
         if ind == -1:
             return
         vals = self.controller.loadPeoplemon(ind,['type','specialAbilityId','evolveLevel','evolveID'])
+        print('values ', vals)
         for val,var in zip(vals,(self.typeVar,self.specialIDVar,self.evolveLevelVar,self.evolveIDVar)):
             var.set(val)
         self.loadStat(self.baseStatVars,self.controller.loadPeoplemon(ind,BaseStats.stats,['baseStats']))

@@ -46,6 +46,7 @@ class PeoplemonController(ItemController):
         if len(self.model.dataObjs) != 0:
             self.cur_ind = 0
             self.click(0)
+        self.load()
 
 class MoveController(ItemController):
     def __init__(self,database):
