@@ -3,6 +3,8 @@ __author__ = 'Vincent'
 from abc import ABCMeta, abstractmethod, abstractstaticmethod
 import inspect
 
+import inspect
+
 class Controller():
 
     __metaclass__ = ABCMeta

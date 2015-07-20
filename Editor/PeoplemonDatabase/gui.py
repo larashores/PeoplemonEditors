@@ -42,6 +42,14 @@ class PeoplemonEditor(Frame):
         self.baseStatVars = []
         self.evAwardVars = []
 
+        newfrm = Frame(self,bd=3,relief=GROOVE)
+        newfrm.pack()
+        self.baseXPYieldVar = IntVar()
+        EntryLabel(newfrm,text='Base XP Yield',textvariable=self.baseXPYieldVar).pack(side=LEFT,padx=(6,3),pady=(0,8))
+        self.XPGroupVar =IntVar()
+        self.xpGroup = XPGroup(newfrm,self.XPGroupVar)
+        self.xpGroup.pack(side=LEFT,padx=(3,6),pady=(0,8))
+
         topfrm = Frame(self,bd=3,relief=GROOVE)
         topfrm.pack()
         self.typeVar = IntVar()
@@ -92,8 +100,8 @@ class PeoplemonEditor(Frame):
         rightfrm = Frame(upfrm)
         leftfrm.pack(side=LEFT,padx=(4,2))
         rightfrm.pack(side=RIGHT,padx=(2,4))
-        for ind,stat in enumerate(PeoplemonEditor.STATS):
-            var = IntVar(self)
+        for ind,stat in enumerate(self.STATS):
+            var = IntVar()
             varList.append(var)
             if ind <=3:
                 label = EntryLabel(leftfrm,text=stat,textvariable = var)
@@ -107,19 +115,23 @@ class PeoplemonEditor(Frame):
     def load(self,ind):
         if ind == -1:
             return
-        vals = self.controller.loadPeoplemon(ind,['type','specialAbilityId','evolveLevel','evolveID'])
-        for val,var in zip(vals,(self.typeVar,self.specialIDVar,self.evolveLevelVar,self.evolveIDVar)):
+        vals = self.controller.loadPeoplemon(ind,['baseXPYield','type','specialAbilityId','evolveLevel','evolveID'])
+        for val,var in zip(vals,(self.baseXPYieldVar,self.typeVar,self.specialIDVar,self.evolveLevelVar,self.evolveIDVar)):
             var.set(val)
         self.loadStat(self.baseStatVars,self.controller.loadPeoplemon(ind,BaseStats.stats,['baseStats']))
         self.loadStat(self.evAwardVars,self.controller.loadPeoplemon(ind,BaseStats.stats,['evAwards']))
+        self.xpGroup.load(self.controller.loadPeoplemon(ind,['xpGroup'])[0])
+        self.xpGroup.apply()
     def loadStat(self,statVars,stats):
         for stat,var in zip(stats,statVars):
             var.set(stat)
     def apply(self):
-        self.controller.update(   {'type': self.typeVar.get(),
-                                             'specialAbilityId': self.specialIDVar.get(),
-                                             'evolveLevel': self.evolveLevelVar.get(),
-                                             'evolveID': self.evolveIDVar.get() })
+        self.controller.update({'type': self.typeVar.get(),
+                                'specialAbilityId': self.specialIDVar.get(),
+                                'evolveLevel': self.evolveLevelVar.get(),
+                                'evolveID': self.evolveIDVar.get(),
+                                'baseXPYield': self.baseXPYieldVar.get(),
+                                'xpGroup':self.XPGroupVar.get()})
         stats = {}
 
         for ind,var in enumerate(self.baseStatVars):
@@ -161,7 +173,24 @@ class PeoplemonEditor(Frame):
             return
         self.validMoveIDVar.set(params[0])
 
+class XPGroup(Frame):
+    def __init__(self,parent,var):
+        self.typeDict = {'Slow': 0,
+                         'Regular': 1,
+                         'Fast': 2, }
+        self.outsideVar = var
 
+        Frame.__init__(self,parent)
+        self.var = StringVar()
+        self.var.set('Slow')
+        Label(self,text='XP Group').pack()
+        OptionMenu(self,self.var, *self.typeDict.keys(),command=lambda choice: self.outsideVar.set(self.typeDict[self.var.get()])).pack()
+    def load(self,ind):
+        for string, ind1 in self.typeDict.items():
+            if ind1 == ind:
+                self.var.set(string)
+    def apply(self):
+        self.outsideVar.set(self.typeDict[self.var.get()])
 
 
 if __name__ == '__main__':

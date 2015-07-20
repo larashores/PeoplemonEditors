@@ -19,6 +19,8 @@ class Peoplemon(Component):
         self.addParam('learnMoves', [])
         self.addParam('evolveLevel', 0)
         self.addParam('evolveID', 0)
+        self.addParam('baseXPYield',0)
+        self.addParam('xpGroup',0)
         self.evAwards = EVAwards()
         self.validMoves = Database(ValidMove)
         self.learnMoves = Database(LearnMove)
@@ -44,6 +46,8 @@ class Peoplemon(Component):
         people.learnMoves= db.fromByteArray(byteArray)
         people.paramDict['evolveLevel'] = unpack(byteArray,'u8')
         people.paramDict['evolveID'] = unpack(byteArray,'u8')
+        people.paramDict['baseXPYield'] = unpack(byteArray,'u16')
+        people.paramDict['xpGroup'] = unpack(byteArray,'u8')
         people.evAwards = self.evAwards.fromByteArray(byteArray)
         return people
 
@@ -61,6 +65,9 @@ class Peoplemon(Component):
 
         pack(data,self.paramDict['evolveLevel'],'u8')
         pack(data,self.paramDict['evolveID'], 'u8')
+
+        pack(data,self.paramDict['baseXPYield'],'u16')
+        pack(data,self.paramDict['xpGroup'],'u8')
 
         data += self.evAwards.toByteArray()
         return data

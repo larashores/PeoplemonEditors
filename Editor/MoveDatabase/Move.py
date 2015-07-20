@@ -23,6 +23,8 @@ class Move(Component):
         self.addParam('effectTargetsSelf',False)
         self.addParam('attackerAnim','')
         self.addParam('defenderAnim','')
+        self.addParam('classification',0)
+        self.addParam('effectScore',0)
 
     def __str__(self):
         return Item.__str__(self)
@@ -44,6 +46,8 @@ class Move(Component):
         move.paramDict['effectTargetsSelf'] = int(unpack(byteArray,'u8'))
         move.paramDict['attackerAnim'] = unpack(byteArray,'str')
         move.paramDict['defenderAnim'] = unpack(byteArray,'str')
+        move.paramDict['classification'] = unpack(byteArray,'u8')
+        move.paramDict['effectScore'] = unpack(byteArray,'u8')
         return move
     def toByteArray(self):
         data = bytearray()
@@ -62,4 +66,7 @@ class Move(Component):
         pack(data,int(self.paramDict['effectTargetsSelf']),'u8')
         pack(data,self.paramDict['attackerAnim'],'str')
         pack(data,self.paramDict['defenderAnim'],'str')
+        pack(data,self.paramDict['classification'],'u8')
+        pack(data,self.paramDict['effectScore'],'u8')
+
         return data

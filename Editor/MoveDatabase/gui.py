@@ -3,13 +3,15 @@ __author__ = 'Vincent'
 from Editor.Database.database import Database
 from Editor.Database.gui import EditorMenu, Editor
 
-from MoveDatabase.Move import Move
-from MoveDatabase.controller import MoveController
+from Editor.MoveDatabase.Move import Move
+from Editor.MoveDatabase.controller import MoveController
 
 from Editor.ItemDatabase.gui import ItemEditor
 from Editor.guicomponents.entrylabel import EntryLabel
 
 from tkinter import *
+
+import inspect
 
 class MoveEditor(Frame):
     def __init__(self,parent,controller):
@@ -22,6 +24,7 @@ class MoveEditor(Frame):
         scdFrm = Frame(self)
         btmFrm = Frame(self)
         lstFrm = Frame(self)
+
         chkFrm.pack()
         topFrm.pack()
         scdFrm.pack()
@@ -38,6 +41,8 @@ class MoveEditor(Frame):
         self.effectIntensityVar = IntVar()
         self.attackAnimVar      = StringVar()
         self.defenderAnimVar    = StringVar()
+        self.classificationVar = IntVar()
+        self.effectScoreVar = IntVar()
 
         self.targetsSelfVar     = IntVar()
         self.isSpecialVar       = IntVar()
@@ -52,11 +57,17 @@ class MoveEditor(Frame):
 
         EntryLabel(scdFrm,text='Priority',textvariable=self.priorityVar).pack(side=LEFT)
         EntryLabel(scdFrm,text='PP',textvariable=self.ppVar).pack(side=LEFT)
+        EntryLabel(scdFrm,text='Type',textvariable=self.typeVar).pack(side=LEFT)
 
         EntryLabel(btmFrm,text='Chance of Effect',textvariable=self.chanceOfEffectVar).pack(side=LEFT)
         EntryLabel(btmFrm,text='Effect Intensity',textvariable=self.effectIntensityVar).pack(side=LEFT)
+
         EntryLabel(lstFrm,text='Attacker Animation',textvariable=self.attackAnimVar).pack(side=LEFT)
         EntryLabel(lstFrm,text='Defender Animation',textvariable=self.defenderAnimVar).pack(side=LEFT)
+
+        self.classificationType = ClassificationType(self,self.classificationVar)
+        self.classificationType.pack()
+        EntryLabel(self,text='Effect Score',textvariable=self.effectScoreVar).pack()
     def apply(self):
         self.controller.update({'isSpecial':bool(self.isSpecialVar.get()),
                                      'atk': self.attackVar.get(),
@@ -69,21 +80,48 @@ class MoveEditor(Frame):
                                      'effectIntensity': self.effectIntensityVar.get(),
                                      'effectTargetsSelf': bool(self.targetsSelfVar.get()),
                                      'attackerAnim': self.attackAnimVar.get(),
-                                     'defenderAnim': self.defenderAnimVar.get()})
+                                     'defenderAnim': self.defenderAnimVar.get(),
+                                     'classification': self.classificationVar.get(),
+                                     'effectScore': self.effectScoreVar.get()})
     def load(self,ind):
         if ind == -1:
             return
-        params = self.controller.loadAttribs(ind,['isSpecial','atk','acc','priority','pp','type','effect','chanceOfEffect',
-                                    'effectIntensity','effectTargetsSelf','attackerAnim','defenderAnim'])
+        params = self.controller.loadAttribs(ind,['isSpecial','atk','acc','priority','pp','type','effect',
+                                                  'chanceOfEffect','effectIntensity','effectTargetsSelf','attackerAnim',
+                                                  'defenderAnim','classification','effectScore'])
         for var, param in zip( (self.isSpecialVar,self.attackVar,self.accuracyVar,
                                 self.priorityVar,self.ppVar,self.typeVar,self.effectVar,
                                 self.chanceOfEffectVar,self.effectIntensityVar,self.targetsSelfVar,
-                                self.attackAnimVar,self.defenderAnimVar),params):
+                                self.attackAnimVar,self.defenderAnimVar, self.classificationVar, self.effectScoreVar),
+                               params):
             if var == self.targetsSelfVar or var == self.isSpecialVar:
                 var.set(int(param))
+            elif var == self.effectScoreVar:
+                var.set(param)
             else:
                 var.set(param)
+        self.classificationType.load(self.controller.loadAttribs(ind,['classification'])[0])
 
+
+class ClassificationType(Frame):
+    def __init__(self,parent,var):
+        self.typeDict = {'Direct Attack': 0,
+                         'Passive Attack': 1,
+                         'Direct Defense': 2,
+                         'Passive Defense': 3,
+                         'Attacking Ailment': 4,
+                         'Defending Ailment': 5,}
+        self.outsideVar = var
+
+        Frame.__init__(self,parent)
+        self.var = StringVar()
+        self.var.set('Direct Attack')
+        Label(self,text='Move Classification').pack()
+        OptionMenu(self,self.var, *self.typeDict.keys(),command=lambda choice: self.outsideVar.set(self.typeDict[self.var.get()])).pack()
+    def load(self,ind):
+        for string, ind1 in self.typeDict.items():
+            if ind1 == ind:
+                self.var.set(string)
 
 if __name__ == '__main__':
     root = Tk()

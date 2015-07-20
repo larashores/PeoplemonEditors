@@ -8,6 +8,7 @@ from Editor.Component import Component
 
 from tkinter import *
 from tkinter.filedialog import askopenfilename, asksaveasfilename
+from tkinter.messagebox import showerror
 from Editor.guicomponents.listchoice import ListChoice
 
 TITLE_NAME = 'Database Editor'
@@ -90,7 +91,11 @@ class EditorMenu(Menu):
         path = asksaveasfilename()
         if path == '':
             return
-        self.controller.saveToFile(path)
+        try:
+            self.controller.saveToFile(path)
+        except:
+            showerror('Error Saving','Error saving: File not saved')
+
     def load(self):
         path = askopenfilename()
         if path == '':

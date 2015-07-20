@@ -32,6 +32,11 @@ class ItemEditor(Frame):
                    text='Name',
                    textvariable=self.name_var)
         name.pack(side=LEFT)
+        if __name__ == '__main__':
+            self.sell_var = IntVar()
+            EntryLabel(self,
+                       text='Sell Price',
+                       textvariable=self.sell_var).pack()
         Label(self,text='Description').pack()
         self.desc = Text(self,height=10,width=45)
         self.desc.pack()
@@ -41,10 +46,11 @@ class ItemEditor(Frame):
     def apply(self):
         success = self.controller.update( {'id': self.id_var.get(),
                                            'name': self.name_var.get(),
-                                           'desc': self.desc.get(1.0, END)} )
+                                           'desc': self.desc.get(1.0, END)[:-1]} )
+        if __name__ == '__main__':
+            self.controller.update( {'sellPrice': self.sell_var.get()} )
         if success is False:
             showerror(title='Error',message='ID Already Taken')
-        self.controller.load()
     def load(self,ind):
         if ind == -1:
             self.name_var.set('')
@@ -55,7 +61,10 @@ class ItemEditor(Frame):
         self.id_var.set(attrs[0])
         self.name_var.set(attrs[1])
         self.desc.delete('1.0',END)
-        self.desc.insert(END,attrs[2][:-1])
+        self.desc.insert(END,attrs[2])
+        if __name__ == '__main__':
+            price = self.controller.model.load(['sellPrice'],[ind])[0]
+            self.sell_var.set(price)
 
 if __name__ == '__main__':
     root = Tk()

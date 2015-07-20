@@ -9,6 +9,7 @@ class Item(Component):
         self.addParam('id',0)
         self.addParam('name','')
         self.addParam('desc','')
+        self.addParam('sellPrice',0)
 
     def __str__(self):
         return 'id: {} | name: {} | desc: {}'.format(self.paramDict['id'],self.paramDict['name'],self.paramDict['desc'])
@@ -18,15 +19,16 @@ class Item(Component):
         pack(data,self.paramDict['id'],'u16')
         pack(data,self.paramDict['name'],'str')
         pack(data,self.paramDict['desc'],'str')
+        pack(data,self.paramDict['sellPrice'],'u32')
         return data
 
     def fromByteArray(self,byteArray):
         item = Item()
         id = unpack(byteArray,'u16')
-        print(id)
         item.update({'id': id})
         item.update({'name': unpack(byteArray,'str')})
         item.update({'desc': unpack(byteArray,'str')})
+        item.update({'sellPrice': unpack(byteArray,'u32')})
         return item
 
 
