@@ -5,6 +5,7 @@ import tkinter.ttk as ttk
 from PIL import ImageTk
 from Editor.AnimationEditor.rotatedrec import rotatedRectangle
 from Editor.AnimationEditor.gui.changeScale import askChange
+import os
 
 class EditorMenu(tk.Menu):
     def __init__(self, frameViewer):
@@ -35,6 +36,7 @@ class FrameWindow(tk.Toplevel):
         viewer.pack(padx=(5, 5), pady=(0, 5))
 
         self.config(menu=EditorMenu(viewer.canvas))
+        self.iconbitmap(os.path.join('icons\\editor.ico'))
 
 class FrameViewer(ttk.Frame):
     def __init__(self,parent,controller):
@@ -117,19 +119,25 @@ class FrameCanvas(ttk.Frame):
         return subimage
 
     def apply(self):
-        self.canvas.xview_scroll(-self.x_scroll_offset, tk.UNITS)    #scroll back
-        self.canvas.yview_scroll(-self.y_scroll_offset, tk.UNITS)
+        try:
+            self.canvas.xview_scroll(-self.x_scroll_offset, tk.UNITS)    #scroll back
+        except:
+            print('error?')
+        try:
+            self.canvas.yview_scroll(-self.y_scroll_offset, tk.UNITS)
+        except:
+            print('error?')
 
         self.spriteSheet = self.controller.getSpriteSheet()
         self.makeFrameImages()
         posWidth, posHeight, negWidth, negHeight = self.getMaxDimension()
         width = posWidth-negWidth
         height = posHeight-negHeight
-        self.x_scroll_offset = int(negWidth*self.scale)
-        self.y_scroll_offset = int(negHeight*self.scale)
         if not self.loaded:
             self.loaded = True
             self.scale = self.getReccomendedScale(width, height)
+        self.x_scroll_offset = int(negWidth*self.scale)
+        self.y_scroll_offset = int(negHeight*self.scale)
         self.canvas.config(width=width*self.scale, height=height*self.scale)
         self.canvas.xview_scroll(self.x_scroll_offset, tk.UNITS)
         self.canvas.yview_scroll(self.y_scroll_offset, tk.UNITS)

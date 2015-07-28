@@ -34,7 +34,7 @@ class Item(Component):
 
 if __name__ == '__main__':
 
-    from Editor.database import Database
+    from Editor.Database.database import Database
 
     db = Database(Item)
     db.add()

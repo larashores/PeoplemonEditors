@@ -2,6 +2,8 @@ __author__ = 'Vincent'
 
 from Editor.TrainerPeoplemonEditor.peoplemon import Peoplemon
 
+from tkinter.messagebox import showerror
+
 class Controller():
     def __init__(self):
         self.model = Peoplemon()
@@ -27,17 +29,23 @@ class Controller():
     def saveToFile(self,path):
         """Saves the model to 'path' """
         self.applyFunc()
-        data = self.model.toByteArray()
-        file = open(path,'wb')
-        file.write(data)
-        file.close()
+        try:
+            data = self.model.toByteArray()
+            file = open(path,'wb')
+            file.write(data)
+            file.close()
+        except:
+            showerror(title='Error', message='Error: Error Saving File')
 
     def loadFromFile(self,path):
         """Loads the model from specified 'path' """
-        file = open(path,'rb')
-        data = bytearray(file.read())
-        file.close()
+        try:
+            file = open(path,'rb')
+            data = bytearray(file.read())
+            file.close()
 
-        peoplemon = self.model.fromByteArray(data)
-        self.model = peoplemon
-        self.loadFunc()
+            peoplemon = self.model.fromByteArray(data)
+            self.model = peoplemon
+            self.loadFunc()
+        except:
+            showerror(title='Error', message='Error: Error loading file')

@@ -80,32 +80,35 @@ class ObjList(Frame):
             self.list.addChoice(string)
 
 class EditorMenu(Menu):
-    def __init__(self,controller):
+    def __init__(self, controller):
         Menu.__init__(self)
         self.controller = controller
+        self.last_path = None
         file = Menu(self, tearoff=0)
         file.add_command(label='Save',command=self.save)
         file.add_command(label='Load',command=self.load)
         self.add_cascade(label='File',menu=file)
     def save(self):
-        path = asksaveasfilename()
+        path = asksaveasfilename(title='Save To?', initialdir=self.last_path)
         if path == '':
             return
         try:
+            self.last_path = path
             self.controller.saveToFile(path)
         except:
             showerror('Error Saving','Error saving: File not saved')
 
     def load(self):
-        path = askopenfilename()
+        path = askopenfilename(title='Load From?', initialdir=self.last_path)
         if path == '':
             return
+        self.last_path = path
         self.controller.loadFromFile(path)
 
 if __name__ == '__main__':
     root = Tk()
     root.title("Sex is real and it affects the future")
-    control = Controller(Database,Component)
+    control = Controller(Database(Component))
     menu = EditorMenu(control)
     root.config(menu=menu)
     edit = Editor(root,control)

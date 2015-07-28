@@ -7,16 +7,19 @@ from Editor.ItemDatabase.gui import ItemEditor
 from Editor.Database.database import Database
 from Editor.Database.gui import EditorMenu,Editor, ObjList
 
-from Editor.guicomponents.entrylabel import EntryLabel
+from Editor.guicomponents.entrylabel_ttk import EntryLabel
+from Editor.guicomponents.integercheck import IntegerCheck
 from Editor.PeoplemonDatabase.Peoplemon import BaseStats
 
 from tkinter import *
+from tkinter import ttk
 from tkinter.messagebox import showerror
 
 import time
 
 TITLE_NAME = 'Item Database Editor'
-TITLE_FONT = ('tkdefaultfont',16,'bold')
+TITLE_FONT = ('tkdefaultfont', 16, 'bold')
+SUBTITLE_FONT = ('tkdefaultfont', 12, 'bold')
 
 
 class LearnMoveList(ObjList):
@@ -45,7 +48,7 @@ class PeoplemonEditor(Frame):
         newfrm = Frame(self,bd=3,relief=GROOVE)
         newfrm.pack()
         self.baseXPYieldVar = IntVar()
-        EntryLabel(newfrm,text='Base XP Yield',textvariable=self.baseXPYieldVar).pack(side=LEFT,padx=(6,3),pady=(0,8))
+        EntryLabel(newfrm,text='Base XP Yield', entry_variable=self.baseXPYieldVar).pack(side=LEFT,padx=(6,3),pady=(0,8))
         self.XPGroupVar =IntVar()
         self.xpGroup = XPGroup(newfrm,self.XPGroupVar)
         self.xpGroup.pack(side=LEFT,padx=(3,6),pady=(0,8))
@@ -53,13 +56,13 @@ class PeoplemonEditor(Frame):
         topfrm = Frame(self,bd=3,relief=GROOVE)
         topfrm.pack()
         self.typeVar = IntVar()
-        EntryLabel(topfrm,text="Type",textvariable=self.typeVar).pack(side=LEFT,padx=(6,3),pady=(0,8))
+        EntryLabel(topfrm,text="Type", entry_variable=self.typeVar).pack(side=LEFT,padx=(6,3),pady=(0,8))
         self.specialIDVar = IntVar()
-        EntryLabel(topfrm,text="Special Ability ID",textvariable=self.specialIDVar).pack(side=LEFT,padx=(3,3),pady=(0,8))
+        EntryLabel(topfrm,text="Special Ability ID", entry_variable=self.specialIDVar).pack(side=LEFT,padx=(3,3),pady=(0,8))
         self.evolveLevelVar = IntVar()
-        EntryLabel(topfrm,text="Evolve Level",textvariable=self.evolveLevelVar).pack(side=LEFT,padx=(3,3),pady=(0,8))
+        EntryLabel(topfrm,text="Evolve Level", entry_variable=self.evolveLevelVar).pack(side=LEFT,padx=(3,3),pady=(0,8))
         self.evolveIDVar = IntVar()
-        EntryLabel(topfrm,text="Evolve ID",textvariable=self.evolveIDVar).pack(side=LEFT,padx=(3,6),pady=(0,8))
+        EntryLabel(topfrm,text="Evolve ID", entry_variable=self.evolveIDVar).pack(side=LEFT,padx=(3,6),pady=(0,8))
 
         nxtfrm = Frame(self)
         nxtfrm.pack()
@@ -81,37 +84,40 @@ class PeoplemonEditor(Frame):
         self.learnMoveLevelVar = IntVar()
         self.learnMoveIDVar = IntVar()
         self.validMoveIDVar = IntVar()
-        EntryLabel(nextfrm,text='Move ID',textvariable = self.learnMoveIDVar).pack(side=LEFT)
-        EntryLabel(nextfrm,text='Learn level',textvariable = self.learnMoveLevelVar).pack(side=LEFT)
+        EntryLabel(nextfrm,text='Move ID', entry_variable = self.learnMoveIDVar).pack(side=LEFT)
+        EntryLabel(nextfrm,text='Learn level', entry_variable = self.learnMoveLevelVar).pack(side=LEFT)
         Button(learnFrm,text='Apply',command=self.applylearnMove).pack()
         self.controller.learnController.loadfuncs.append(self.loadLearnMove)
 
         ValidMoveList(validFrm, controller.validController).pack()
-        EntryLabel(validFrm,text='Move ID',textvariable = self.validMoveIDVar).pack()
+        EntryLabel(validFrm,text='Move ID', entry_variable = self.validMoveIDVar).pack()
         Button(validFrm,text='Apply',command=self.applyValidMove).pack()
         self.controller.validController.loadfuncs.append(self.loadValidMove)
     def makeStats(self,frame,text,varList):
-        frm = Frame(frame,bd=3,relief=GROOVE)
+        frm = ttk.Frame(frame, relief=GROOVE)
         frm.pack()
-        Label(frm,text=text,font=[TITLE_FONT[0]]+[14]+[TITLE_FONT[2]]).pack()
-        upfrm = Frame(frm)
-        upfrm.pack()
-        leftfrm = Frame(upfrm)
-        rightfrm = Frame(upfrm)
-        leftfrm.pack(side=LEFT,padx=(4,2))
-        rightfrm.pack(side=RIGHT,padx=(2,4))
-        for ind,stat in enumerate(self.STATS):
+        ttk. Label(frm, text=text, style='Subtitle.TLabel').pack(pady=(5, 0))
+        upfrm = ttk.Frame(frm)
+        upfrm.pack(padx=2)
+        leftfrm = ttk.Frame(upfrm)
+        rightfrm = ttk.Frame(upfrm)
+        leftfrm.pack(side=LEFT, padx=(4, 2))
+        rightfrm.pack(side=RIGHT, padx=(2, 4))
+        for ind, stat in enumerate(self.STATS):
             var = IntVar()
             varList.append(var)
-            if ind <=3:
-                label = EntryLabel(leftfrm,text=stat,textvariable = var)
+            if ind <= 3:
+                label = EntryLabel(leftfrm, text=stat, entry_variable=var, validate='key',
+                                   validatecommand=IntegerCheck(self, 'u16').vcmd)
                 label.pack()
-            elif ind<8:
-                label = EntryLabel(rightfrm,text=stat,textvariable = var)
+            elif ind < 8:
+                label = EntryLabel(rightfrm, text=stat, entry_variable=var, validate='key',
+                                   validatecommand=IntegerCheck(self, 'u16').vcmd)
                 label.pack()
             else:
-                label = EntryLabel(frm,text=stat,textvariable = var)
-                label.pack(side=BOTTOM,pady=(0,5))
+                label = EntryLabel(frm, text=stat, entry_variable=var, validate='key',
+                                   validatecommand=IntegerCheck(self, 'u16').vcmd)
+                label.pack(side=BOTTOM, pady=(0,5))
     def load(self,ind):
         if ind == -1:
             return
@@ -196,6 +202,8 @@ class XPGroup(Frame):
 if __name__ == '__main__':
 
     root = Tk()
+    style = ttk.Style(root)
+    style.configure('Subtitle.TLabel', font=SUBTITLE_FONT)
     root.title("Sex is real and it affects the future")
     control = PeoplemonController(Database(Peoplemon))
 
@@ -210,5 +218,5 @@ if __name__ == '__main__':
     item.pack()
 
 
-    peoplemon.pack(side=RIGHT,padx=(10,0))
+    peoplemon.pack(side=RIGHT, padx=(10,0))
     mainloop()

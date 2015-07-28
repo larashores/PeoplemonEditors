@@ -124,7 +124,7 @@ class SideBar(ttk.Frame):
         self.checkAction()
 
 
-class IntegerCheck():
+class IntegerCheck:
     def __init__(self, parent, intType):
         self.parent = parent
         if intType == 'u8':
@@ -161,7 +161,7 @@ class IntegerCheck():
         elif _type == '1':
             try:
                 num = int(afterText)
-            except:
+            except ValueError:
                 if (self.low < 0) and (afterText == '-'):
                     return True
                 else:

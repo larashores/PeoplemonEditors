@@ -81,11 +81,12 @@ class AnimationEditor(ttk.Frame):
 if __name__ == '__main__':
     controller = Controller()
     root = Tk()
+    root.iconbitmap(os.path.join('icons\\editor.ico'))
     menu = EditorMenu(controller)
     root.config(menu=menu)
     root.title('Animation Editor')
 
-    FrameWindow(root, controller)
+    window = FrameWindow(root, controller)
 
     style = ttk.Style()
     style.configure('Boxed.TFrame', relief=RIDGE, borderwidth=5)

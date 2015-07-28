@@ -4,6 +4,7 @@ from tkinter import *
 
 from Editor.AnimationEditor.gui.changeScale import askChange
 from Editor.AnimationEditor.gui.frameViewer import FrameCanvas
+import os
 
 class EditorMenu(Menu):
     def __init__(self, frameViewer):
@@ -39,6 +40,7 @@ class PreviewWindow(Toplevel):
         ind = self.cur_frame.get()
         length = self.viewer.images[ind][1]
         self.after(length, self.nextImage)
+        self.iconbitmap(os.path.join('icons\\editor.ico'))
 
 
     def nextImage(self):
