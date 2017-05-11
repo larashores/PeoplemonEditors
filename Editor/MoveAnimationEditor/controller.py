@@ -7,6 +7,8 @@ from Editor.MoveAnimationEditor.saveables.saveables import AnimationExport, Fram
 import os
 from PIL import Image
 from tkinter.filedialog import askopenfilename
+from tkinter import ttk
+import tkinter as tk
 
 
 class Controller:
@@ -151,6 +153,7 @@ class Controller:
 
     def load(self, anim_data, anim_path):
         self.animation.load_in_place(anim_data, True)
+
 
         self.editor_model.current_frame = 0
         self.editor.selected = None

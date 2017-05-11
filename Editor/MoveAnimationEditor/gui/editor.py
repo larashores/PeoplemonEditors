@@ -56,8 +56,8 @@ class Editor(ttk.Frame):
         self.frame_label.pack()
         self.frame_select.pack(fill=tk.X)
         self.canvas.pack()
-        # self.canvas.bind('<Prior>', lambda event: self.handle_next(event, False))
-        # self.canvas.bind('<Next>', lambda event: self.handle_next(event, True))
+        self.canvas.bind('<Prior>', lambda event: self.handle_next(event, False))
+        self.canvas.bind('<Next>', lambda event: self.handle_next(event, True))
         self.canvas.bind('<Delete>', self.on_delete_click)
         self.canvas.bind('<Button-1>', self.on_left_click)
         self.canvas.bind('<Button-3>', self.on_right_click)
@@ -267,9 +267,9 @@ class Editor(ttk.Frame):
             else:
                 ind += 1
             img = images[ind % len(images)]
-            self.select(event, img)
+            self.select(img)
         elif len(images) != 0:
-            self.select(event, images[0])
+            self.select(images[0])
 
     def on_frame_scale_changed(self, event):
         """
