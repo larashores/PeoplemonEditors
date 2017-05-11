@@ -170,15 +170,14 @@ class Outline(Shape):
     RIGHT = 3
     BOTTOM = 4
 
-
     def __init__(self, canvas, image):
         Shape.__init__(self, canvas)
         self.image = image              # The CanvasImage object
         self.canvas = canvas
         self.rotation = image.rotation
 
-        location = image.location
-        self.location = image.location
+        self.location = Point(image.x, image.y)
+        location = self.location
         self.top_left = Point(location.x, location.y)
         self.top_right = Point(location.x + image.width, location.y)
         self.bottom_left = Point(location.x, location.y + image.height)
@@ -212,11 +211,10 @@ class Outline(Shape):
         # ---------------------------------------
 
         # ------------Make crop outline-------------------
-        limits = self.image.crop_limits
-        left = limits[0] * self.get_width()
-        upper = limits[1] * self.get_height()
-        right = limits[2] * self.get_width()
-        bottom = limits[3] * self.get_height()
+        left = (self.image.crop_left / 255) * self.get_width()
+        upper = (self.image.crop_top / 255) * self.get_height()
+        right = (self.image.crop_right / 255) * self.get_width()
+        bottom = (self.image.crop_bottom / 255) * self.get_height()
         top_left_crop = self.top_left + (left, upper)
         top_right_crop = self.top_right + (-right, upper)
         bottom_left_crop = self.bottom_left + (left, -bottom)
@@ -395,7 +393,7 @@ class Outline(Shape):
         """
         self.destroy()
         self.image.destroy()
-        self.image.draw()
+        self.image.draw(self.canvas)
         self.draw()
 
     def handle_move(self, event):
@@ -785,14 +783,10 @@ class CanvasImage(Shape):
 
         return -> None
         """
-        width, height = self.canvas.winfo_width(), self.canvas.winfo_height()
         im_width, im_height = self.img.size
-        if im_width <= width and im_height <= height:
-            return im_width, im_height
-        if im_width > im_height:
-            ratio = im_width / width
-        else:
-            ratio = im_height / height
+        width_ratio = im_width / self.canvas.winfo_width()
+        height_ratio = im_height / self.canvas.winfo_height()
+        ratio = max(width_ratio, height_ratio)
 
         self.width = im_width/ratio
         self.height = im_height/ratio

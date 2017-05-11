@@ -50,7 +50,7 @@ class EditorMenu(tk.Menu):
         if (x is not None) and (y is not None):
             self.controller.shift_all(x, y)
 
-    def get_paths(self, animation_type, last_paths, last_path_names, verb):
+    def get_paths(self, animation_type, last_paths, last_path_names, verb, texture=True):
         last_paths.clear()
         last_paths.extend(load_locations_new(last_path_names))
         path_dict = {}
@@ -70,15 +70,27 @@ class EditorMenu(tk.Menu):
         self.controller.last_texture_path = os.path.splitext(texture_path)[0]
         return anim_path, texture_path
 
+    def get_path(self, animation_type, last_paths, last_path_names, verb, texture=True):
+        last_paths.clear()
+        last_paths.extend(load_locations_new(last_path_names))
+        path_dict = {}
+        anim_path = asksaveasfilename(title=verb+' Animation File', initialdir=os.path.split(last_paths[0])[0],
+                                      defaultextension=animation_type, filetypes=[('Animation File', animation_type)])
+        if not anim_path:
+            raise ValueError("Path not chosen")
+        path_dict[last_path_names[0]] = anim_path
+        self.controller.last_anim_path = os.path.splitext(anim_path)[0]
+        save_location(path_dict)
+        return anim_path
+
     def save(self):
         try:
-            anim_path, texture_path = self.get_paths('.devanim', self.last_save_path, LOCATIONS_SAVE, 'Save')
-            self.controller.save(anim_path, texture_path)
+            anim_path = self.get_path('.devanim', self.last_save_path, LOCATIONS_SAVE, 'Save')
+            self.controller.save(anim_path)
             showinfo('Saved', 'Animation saved')
-        except ValueError:
-            return
         except:
             showerror('Error', 'Animation not saved')
+            raise
 
     def export(self):
         try:
@@ -101,26 +113,11 @@ class EditorMenu(tk.Menu):
         try:
             file = open(anim_path, 'rb')
             data = bytearray(file.read())
-            texture_name = sr.unpack(data, 'str')
             file.close()
-        except:
-            showerror('Error', 'Animation not loaded')
-            return
-
-        texture_path = askopenfilename(title='Load Sprite Sheet File',
-                                       initialdir=self.last_load_path[1],
-                                       initialfile=texture_name,
-                                       defaultextension='.png', filetypes=[('PNG', '.png')])
-        if not texture_path:
-            save_location(location_dict)
-            return
-        location_dict[LOCATIONS_LOAD[1]] = texture_path
-        try:
-            self.controller.load(data, anim_path, texture_path)
+            self.controller.load(data, anim_path)
         except:
             showerror('Error', 'Animation not loaded')
             raise
-            return
         save_location(location_dict)
 
     def new(self):
