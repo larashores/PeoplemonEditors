@@ -6,10 +6,11 @@ from Editor.MoveAnimationEditor.runtime_models.Outline import Outline
 from Editor.MoveAnimationEditor.saveables.DrawnImage import DrawnImage
 from Editor.saveable.saveableArray import ChangeType
 
+from PIL import ImageTk, Image
+import time
 import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import askokcancel
-from PIL import ImageTk, Image
 
 
 SIZE = 800, 460
@@ -258,7 +259,6 @@ class Editor(ttk.Frame):
         pre-conditions: self.cur_frame is a valid index of self.frames
         post-conditions: Current selected object is changed
         """
-        '''
         images = self.controller.animation.frames[self.controller.editor_model.current_frame].images
         if self.selected:
             ind = images.index(self.selected)
@@ -270,7 +270,6 @@ class Editor(ttk.Frame):
             self.select(event, img)
         elif len(images) != 0:
             self.select(event, images[0])
-        '''
 
     def on_frame_scale_changed(self, event):
         """
@@ -363,43 +362,20 @@ class Editor(ttk.Frame):
         self.outline.redraw(self.canvas)
 
     def preview_anim(self):
-        import time
-        new_frames = []
-        for ind, frame in enumerate(self.frames):
-            frm = Frame()
-            frm.length = frame.length
-            new_frames.append(frm)
-            image = Image.new('RGBA', SIZE)
-            for img in frame.images:
-                top = Image.new('RGBA', SIZE)
-                processed = img.create_image()
-                top_left = img.get_center() - (processed.size[0]/2, processed.size[1]/2)
-                top_left.set(int(round(top_left[0])), int(round(top_left[1])))
-                bottom_right = top_left + (processed.size[0], processed.size[1])
-                print('Index:', ind, (top_left[0], top_left[1]))
-                #new_image.paste(processed, (top_left[0], top_left[1], bottom_right[0], bottom_right[1]))
-                top.paste(processed, (top_left[0], top_left[1]))
-                image = Image.alpha_composite(image, top)
-
-            cvs = CanvasImage(self.canvas, image)
-            cvs.make_tk()
-            frm.images.append(cvs)
-
-        self.background.make_tk()
-        for frame in new_frames:
+        def clear_canvas():
+            self.canvas.delete('drawn_image')
+            self.canvas.delete('outline')
+            self.ids_to_drawn.clear()
+        clear_canvas()
+        for frame in self.controller.animation.frames:
             start = time.time()
-            self.canvas.delete(tk.ALL)
-            self.background.draw_unprocessed()
-            frame.draw_unprocessed()
+            clear_canvas()
+            frame.draw(self.canvas)
             self.canvas.update_idletasks()
             self.canvas.update()
             end = time.time()
             wait = frame.length/1000 - (end-start)
             wait = 0 if wait < 0 else wait
-            print(wait)
             time.sleep(wait)
 
-        self.cur_frame = -1
-        self.selected = None
-        self.outline = None
-        self.change_frame(None)
+        self.controller.editor_model.current_frame = self.controller.editor_model.current_frame

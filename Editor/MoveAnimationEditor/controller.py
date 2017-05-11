@@ -79,7 +79,7 @@ class Controller:
     def export(self, animation_path, texture_path):
         locations = self.save_sprite_sheet(texture_path)
 
-        names_to_anim_image = []
+        names_to_anim_image = {}
         for anim_image in self.animation.images:
             names_to_anim_image[anim_image.name] = anim_image
 
@@ -96,31 +96,32 @@ class Controller:
                 new_image.scale_y = 100
                 new_image.transparency = 255
                 continue
-            for img in frame.images:
-                orig_width, orig_height = img.imgage.size                   # Width and height of loaded image
+            for drawn_img in frame.images:
+                img = names_to_anim_image[drawn_img.name]
+                orig_width, orig_height = img.image.size  # Width and height of loaded image
 
-                image_offset_left = img.crop_left*orig_width        # How much displaced from left
-                image_offset_top = img.crop_top*orig_height        # Displacement from top
-                image_offset_right = img.crop_right*orig_width       # Displacement from right
-                image_offset_bottom = img.crop_bottom*orig_height     # Displacement from bottom
+                image_offset_left = drawn_img.crop_left*orig_width / 255        # How much displaced from left
+                image_offset_top = drawn_img.crop_top*orig_height / 255        # Displacement from top
+                image_offset_right = drawn_img.crop_right*orig_width / 255       # Displacement from right
+                image_offset_bottom = drawn_img.crop_bottom*orig_height / 255     # Displacement from bottom
 
-                start_x = locations[img.name][0]                         # X location of image in sprite sheet
-                start_y = locations[img.name][1]                         # Y location
-                scale_x = (orig_width / img.width) * 100                 # X scaling for image
-                scale_y = (orig_height / img.height) * 100               # Y scaling for image
+                start_x = locations[drawn_img.name][0]                         # X location of image in sprite sheet
+                start_y = locations[drawn_img.name][1]                         # Y location
+                scale_x = (orig_width / drawn_img.width) * 100                 # X scaling for image
+                scale_y = (orig_height / drawn_img.height) * 100               # Y scaling for image
 
                 x = start_x + image_offset_left                            # X position to start in sprite sheet
                 y = start_y + image_offset_top                             # Y position
                 width = orig_width - image_offset_right - image_offset_left     # Width to grab from sprite sheet
                 height = orig_height - image_offset_bottom - image_offset_top   # Height to grab
 
-                rotation = img.rotation                                  # Image rotation
-                transparency = img.transparency                          # Image transparency
+                rotation = drawn_img.rotation                                  # Image rotation
+                transparency = drawn_img.transparency                          # Image transparency
 
                 # Get offsets
-                top_left = Point(img.x + image_offset_left, img.y + image_offset_top)
+                top_left = Point(drawn_img.x + image_offset_left, drawn_img.y + image_offset_top)
                 bottom_right = Point(top_left.x + width, top_left.y + height)
-                image_center = Point(*img.get_center())                  # Rotation point of image
+                image_center = Point(*drawn_img.get_center())                  # Rotation point of image
                 cropped_center = top_left.midpoint(bottom_right)           # Rotation point of cropped image
 
                 top_left.rotate(image_center, rotation)
