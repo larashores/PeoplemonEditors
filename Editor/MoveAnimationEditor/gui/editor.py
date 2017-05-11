@@ -1,19 +1,16 @@
-import tkinter as tk
-from tkinter import ttk
-from tkinter.messagebox import showerror, askokcancel
-import os
-
-from Editor.MoveAnimationEditor.guicomponents.listchoice import ListChoice
 from Editor.MoveAnimationEditor.guicomponents.entrylabel import EntryLabel
 from Editor.MoveAnimationEditor.guicomponents.integercheck import IntegerCheck
+from Editor.MoveAnimationEditor.guicomponents.listchoice import ListChoice
 
-from Editor.MoveAnimationEditor.frame import Frame
-from Editor.MoveAnimationEditor.gui.canvasobjects import CanvasImage
-from Editor.MoveAnimationEditor.saveables.DrawnImage import DrawnImage
 from Editor.MoveAnimationEditor.runtime_models.Outline import Outline
-
+from Editor.MoveAnimationEditor.saveables.DrawnImage import DrawnImage
 from Editor.saveable.saveableArray import ChangeType
+
+import tkinter as tk
+from tkinter import ttk
+from tkinter.messagebox import askokcancel
 from PIL import ImageTk, Image
+
 
 SIZE = 800, 460
 
@@ -32,13 +29,13 @@ class Editor(ttk.Frame):
         self.right_side = ttk.Frame(self)
         self.image_list = ListChoice(self.sidebar, update_cmd=self.load_preview, delete_cmd=self.delete_image)
         self.preview = tk.Canvas(self.sidebar, width=1, height=200, borderwidth=2, relief=tk.SUNKEN, background='white')
-        self.frame_select = ttk.Scale(self.center_side, from_=1, to=1, command=self.handle_frame)
+        self.frame_select = ttk.Scale(self.center_side, from_=1, to=1, command=self.on_frame_scale_changed)
         self.frame_label = ttk.Label(self.center_side, text='Frame', style='Title.TLabel')
         self.canvas = tk.Canvas(self.center_side, width=SIZE[0], height=SIZE[1],
                                 highlightthickness=0, background='white')
 
         self.length_var = tk.IntVar(self)
-        self.length_var.trace_variable('w', self.change_length)
+        self.frame_trace = self.length_var.trace_variable('w', self.change_length)
         self.length = EntryLabel(self.right_side, text="Frame Length", validate='key', entry_variable=self.length_var,
                                  validatecommand=IntegerCheck(self, 'u16').vcmd)
 
@@ -58,19 +55,18 @@ class Editor(ttk.Frame):
         self.frame_label.pack()
         self.frame_select.pack(fill=tk.X)
         self.canvas.pack()
-        self.canvas.bind('<Prior>', lambda event: self.handle_next(event, False))
-        self.canvas.bind('<Next>', lambda event: self.handle_next(event, True))
-        self.canvas.bind('<Delete>', self.delete_selection)
+        # self.canvas.bind('<Prior>', lambda event: self.handle_next(event, False))
+        # self.canvas.bind('<Next>', lambda event: self.handle_next(event, True))
+        self.canvas.bind('<Delete>', self.on_delete_click)
         self.canvas.bind('<Button-1>', self.on_left_click)
-        self.canvas.bind('<Button-3>', self.click_canvas)
-        self.canvas.bind('<B3-Motion>', self.drag_canvas)
+        self.canvas.bind('<Button-3>', self.on_right_click)
+        self.canvas.bind('<B3-Motion>', self.on_right_drag)
         self.canvas.bind('<Up>', lambda event: self.move(Editor.UP))
         self.canvas.bind('<Down>', lambda event: self.move(Editor.DOWN))
         self.canvas.bind('<Left>', lambda event: self.move(Editor.LEFT))
         self.canvas.bind('<Right>', lambda event: self.move(Editor.RIGHT))
         self.canvas.bind('<Control-c >', self.copy)
         self.canvas.bind('<Control-v >', self.paste)
-        self.canvas.ids_to_image = {}
 
         self.right_side.pack(side=tk.LEFT, fill=tk.Y)
         ttk.Label(self.right_side, text='Frame Settings', style='Title.TLabel').pack(pady=(10, 10))
@@ -81,53 +77,20 @@ class Editor(ttk.Frame):
         self.apply.pack(pady=(5, 0))
         ttk.Button(self.right_side, text='Preview', command=self.preview_anim).pack(pady=(30, 0))
 
-        self.images = []            # Holds images for when they are first added to the editor
-        self.preview_drawn_images = []
-        self.prev_frame = None      # Stores previous frame so images won't be garbage collected
+        self.preview_drawn_images = []  # Holds all images in the preview window
         self.cur_preview = None     # Stores current preview image to prevent garbage collection
-        self.selected = None        # Stores the id of the current selected image
+        self.selected = None        # Stores the selected DrawImage
         self.outline = None         # Stores the current outline object
-        self.cur_frame = 0          # Stores the current selected frame
-        self.copied = None
-        self.ids_to_drawn = {}
+        self.copied = None          # Stroes a DrawnImage object that was copied
+        self.ids_to_drawn = {}      # All DrawnImage's on the canvas can be references through id with this map
 
-        self.background = CanvasImage(self.canvas, 'icons\\layout.png')
-        self.background.draw()
+        # Create the background photo
+        image = Image.open('icons\\layout.png')
+        self.background = ImageTk.PhotoImage(image)
+        self.canvas.create_image(image.size[0]//2, image.size[1]//2, image=self.background)
 
-
-        def handler(event):
-            x = event.x
-            y = event.y
-            tags = self.canvas.find_overlapping(x-1, y-1, x+1, y+1)
-            print(tags)
-            max_transparent = 0
-            select = None
-            for tag in tags:
-                if tag in self.canvas.ids_to_image:
-                    img = self.canvas.ids_to_image[tag]
-                    if tag == self.background.id:
-                        continue
-                    relative = (event.x-img.location.x, event.y-img.location.y)
-                    if relative[0] < 0 or relative[1] < 0 or relative[0] > img.width or relative[1] > img.height:
-                        continue
-                    print('location:', relative)
-                    transparency = img.img.load()[relative[0], relative[1]][3]
-                    if transparency > max_transparent:
-                        select = img
-            if select and select.select_func:
-                select.select_func(event, select)
-
-        #self.canvas.bind('<Button-1>', handler)
-
-        self.frame_select.set(1)
-        self.transparency.set(1)
+        self.transparency.set(255)
         self.toggle_transparency()
-        self.length_var.set(30)
-
-        self.canvas_clicked = False
-
-        PATH = r'E:\Applications\Peoplemon 2\Move Animations'
-        ttk.Button(self.right_side, text='Convert', command=lambda: self.controller.convert_all(PATH)).pack()
 
         self.controller.animation.images.register(self.anim_images_updates)
         self.controller.editor_model.register(self.change_frame)
@@ -152,6 +115,27 @@ class Editor(ttk.Frame):
                     to_select = img
         if to_select:
             self.select(to_select)
+
+    def on_right_click(self, event):
+        self.canvas.scan_mark(event.x, event.y)
+
+    def on_right_drag(self, event):
+        self.canvas.scan_dragto(event.x, event.y, gain=1)
+
+    def anim_images_updates(self, update_type, anim_img):
+        if update_type == ChangeType.ADD:
+            self.preview_drawn_images.append(DrawnImage(anim_img))
+            self.image_list.addChoice(anim_img.name)
+            self.image_list.update()
+            self.image_list.setSelection(-1)
+        elif update_type == ChangeType.REMOVE:
+            for ind, img in enumerate(self.preview_drawn_images):
+                if img.anim_img == anim_img:
+                    img.destroy(self.preview)
+                    self.preview_drawn_images.pop(ind)
+                    self.image_list.delete(ind)
+                    break
+            self.controller.editor_model.current_frame = self.controller.editor_model.current_frame
 
     def select(self, image):
         """
@@ -181,9 +165,11 @@ class Editor(ttk.Frame):
 
     def paste(self, event):
         if self.copied:
-            frm = self.frames[self.cur_frame]
+            frm = self.controller.animation.frames[self.cur_frame]
             frm.images.append(self.copied)
-            self.copied.draw()
+            _id = self.copied.draw(self.canvas)
+            self.ids_to_drawn[_id] = self.copied
+            self.select(self.copied)
             self.copied = self.copied.copy()
 
     def toggle_transparency(self):
@@ -195,54 +181,6 @@ class Editor(ttk.Frame):
             self.transparency.state(['disabled'])
             self.transparency_alt.state(['disabled'])
             self.apply.state(['disabled'])
-
-    def click_canvas(self, event):
-        self.canvas.scan_mark(event.x, event.y)
-
-    def drag_canvas(self, event):
-        self.canvas.scan_dragto(event.x, event.y, gain=1)
-
-    def anim_images_updates(self, update_type, anim_img):
-        if update_type == ChangeType.ADD:
-            self.preview_drawn_images.append(DrawnImage(anim_img))
-            self.image_list.addChoice(anim_img.name)
-            self.image_list.update()
-            self.image_list.setSelection(-1)
-        elif update_type == ChangeType.REMOVE:
-            for ind, img in enumerate(self.preview_drawn_images):
-                if img.anim_img == anim_img:
-                    img.destroy(self.preview)
-                    self.preview_drawn_images.pop(ind)
-                    self.image_list.delete(ind)
-                    break
-            self.controller.editor_model.current_frame = self.controller.editor_model.current_frame
-
-    def add_image(self, img, name=''):
-        """
-        Adds an image to the program that can be used in animations. Can then be selected from self.image_list
-
-        path -> The path of the image to open
-
-        pre-conditions: None
-        post-conditions: The image is added to image_list and selected
-
-        return -> None
-        """
-        if type(img) == str:
-            name = os.path.split(img)[1]
-            try:
-                img = CanvasImage(self.preview, img, name=name)
-                img.scale_max()
-                img.center()
-            except OSError:
-                showerror('Invalid Image', 'Image could not be loaded')
-                return
-        else:
-            img = CanvasImage(self.preview, img, name=name)
-        self.images.append(img)
-        self.image_list.addChoice(name)
-        self.image_list.update()
-        self.image_list.setSelection(-1)
 
     def load_preview(self, ind):
         """
@@ -287,9 +225,6 @@ class Editor(ttk.Frame):
                 frame.images.remove(image)
         self.controller.animation.images.pop(ind)
 
-        #if answer:
-        #    self.controller.editor_model.current_frame = self.controller.editor_model.current_frame
-
     def insert_image(self):
         """
         Inserts the currently selected image into the current frame
@@ -323,7 +258,8 @@ class Editor(ttk.Frame):
         pre-conditions: self.cur_frame is a valid index of self.frames
         post-conditions: Current selected object is changed
         """
-        images = self.frames[self.cur_frame].images
+        '''
+        images = self.controller.animation.frames[self.controller.editor_model.current_frame].images
         if self.selected:
             ind = images.index(self.selected)
             if prev:
@@ -334,8 +270,9 @@ class Editor(ttk.Frame):
             self.select(event, img)
         elif len(images) != 0:
             self.select(event, images[0])
+        '''
 
-    def handle_frame(self, event):
+    def on_frame_scale_changed(self, event):
         """
         Event handler for when the frame selector scale is moved
 
@@ -366,18 +303,13 @@ class Editor(ttk.Frame):
         self.length_var.set(frame.length)
         _ids = frame.draw(self.canvas)
         self.ids_to_drawn.update(_ids)
-        '''
-        if self.cur_frame != 0:
-            last_frm = self.frames[self.cur_frame - 1].copy()
-            for img in last_frm:
-                img.transparency /= 2
-                img.select_func = None
-            last_frm.draw()
-            self.prev_frame = last_frm
-        '''
+        self.selected = None
+        if self.controller.editor_model.current_frame != 0:
+            last_frm = self.controller.animation.frames[self.controller.editor_model.current_frame - 1]
+            last_frm.draw_half_transparent(self.canvas)
         self.toggle_transparency()
 
-    def delete_selection(self, event):
+    def on_delete_click(self, event):
         if self.selected is None:
             return
         self.outline.destroy(self.canvas)
@@ -386,51 +318,13 @@ class Editor(ttk.Frame):
         self.selected = None
         self.toggle_transparency()
 
-    def insert_frame(self, ind):
-        """
-        Adds a frame to the of the animation and selects that frame
-
-        ind -> The frame to add the new frame after (1-based)
-
-        pre-conditions: None
-        post-conditions: New frame added and selected
-
-        return -> None
-        """
-        num_frames = len(self.controller.animation.frames)
-        self.controller.animation.frames.insert((ind % num_frames),
-                                                self.controller.animation.frames[(ind % (num_frames+1))-1].copy())
-        self.frame_select.config(to=len(self.controller.animation.frames))
-        self.frame_select.set((ind % (num_frames+1)) + 1)
-        self.change_frame(ind)
-
-    def delete_frame(self, ind):
-        """
-        Deletes a frame from the animation and selects the next frame)
-
-        ind -> The frame to delete (1-based)
-
-        pre-conditions: None
-        post-conditions: New frame deleted and next selected
-
-        return -> None
-        """
-        if ind == 1 and len(self.frames) == 1:
-            return
-        self.frames.pop((ind % len(self.frames)) - 1)
-        self.frame_select.config(to=len(self.frames))
-        if len(self.frames) < ind:
-            ind = len(self.frames)
-        self.frame_select.set(ind)
-        self.handle_frame(None)
-
     def change_length(self, name, empty, mode):
         try:
             num = int(self.length_var.get())
         except ValueError:
             return
-        if num != self.controller.animation.frames[self.cur_frame].length:
-            self.controller.animation.frames[self.cur_frame].length = num
+        if num != self.controller.animation.frames[self.controller.editor_model.current_frame].length:
+            self.controller.animation.frames[self.controller.editor_model.current_frame].length = num
 
     def change_transparency(self, event):
         if self.selected:
@@ -454,20 +348,19 @@ class Editor(ttk.Frame):
         if not self.selected:
             return
         if direction == Editor.UP:
-            add = (0, -1)
+            self.selected.y -= 1
+            self.outline.move(0, -1)
         elif direction == Editor.DOWN:
-            add = (0, 1)
+            self.selected.y += 1
+            self.outline.move(0, 1)
         elif direction == Editor.RIGHT:
-            add = (1, 0)
+            self.selected.x += 1
+            self.outline.move(1, 0)
         elif direction == Editor.LEFT:
-            add = (-1, 0)
+            self.selected.x -= 1
+            self.outline.move(-1, 0)
 
-        self.selected.location += add
-        self.outline.move(*add)
-        self.selected.destroy()
-        self.outline.destroy()
-        self.selected.draw()
-        self.outline.draw()
+        self.outline.redraw(self.canvas)
 
     def preview_anim(self):
         import time

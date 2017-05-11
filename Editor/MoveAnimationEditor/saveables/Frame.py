@@ -10,11 +10,13 @@ class Frame(Composite):
 
     def __init__(self):
         Composite.__init__(self)
-        length = 30
+        self.length = 30
+        self.half_transparent_images = []
 
     def pre_generate_images(self):
         for img in self.images:
             img.create_image()
+            img.create_half_transparent()
 
     def draw(self, canvas):
         _ids = {}
@@ -22,6 +24,14 @@ class Frame(Composite):
             _id = img.draw(canvas)
             _ids[_id] = img
         return _ids
+
+    def pre_generate_half_transparent(self):
+        for img in self.images:
+            img.pre_generate_half_transparent()
+
+    def draw_half_transparent(self, canvas):
+        for img in self.images:
+            img.draw_half_transparent(canvas)
 
     def copy(self):
         new = Frame()

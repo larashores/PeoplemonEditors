@@ -9,6 +9,7 @@ from Editor.MoveAnimationEditor.saveables.AnimImage import AnimImage
 from PIL import ImageTk, Image
 
 import copy as cp
+import numpy as np
 
 
 class DrawnImage(Composite):
@@ -34,13 +35,18 @@ class DrawnImage(Composite):
         self.changed = False
         if image:
             self.set_image(image)
+            self.scale_original()
         self.register(self.item_changed)
 
         self.canvas_to_id = {}
         self.id_to_canvas = {}
+        self.half_transparent = None
+        self.half_transparent_tk = None
+        self.update_half_transparent = True
 
     def item_changed(self, key):
         self.changed = True
+        self.update_half_transparent = True
 
     def copy(self):
         """
@@ -136,24 +142,49 @@ class DrawnImage(Composite):
                              x_off+to_paste.size[0],
                              y_off+to_paste.size[1]))
 
+        img = img.rotate(-self.rotation)
+
+        multiply_factor = self.transparency / 255
         if self.transparency != 255:
             img_load = img.load()
-            for row in range(img.size[0]):
-                for col in range(img.size[1]):
+            rows = range(img.size[0])
+            cols = range(img.size[1])
+            for row in rows:
+                for col in cols:
                     pixel = img_load[row, col]
-                    img_load[row, col] = pixel[0], pixel[1], pixel[2], int(pixel[3]*(self.transparency / 255))
-
-        self.scaled_img = img.rotate(-self.rotation)
+                    if pixel[3] != 0:
+                        img_load[row, col] = pixel[0], pixel[1], pixel[2], int(pixel[3]*multiply_factor)
+        self.scaled_img = img
         self.img_tk = ImageTk.PhotoImage(img)
         self.changed = False
 
     def draw(self, canvas):
         if self.changed:
             self.create_image()
-        _id = canvas.create_image(self.get_center(), image=self.img_tk, tags='drawn_image')
+        tags = 'drawn_image'
+        _id = canvas.create_image(self.get_center(), image=self.img_tk, tags=tags)
         self.canvas_to_id[canvas] = _id
         self.id_to_canvas[_id] = canvas
         return _id
+
+    def create_half_transparent(self):
+        if self.changed:
+            self.create_image()
+        data = self.scaled_img.load()
+        rows = range(self.scaled_img.size[0])
+        cols = range(self.scaled_img.size[1])
+        for row in rows:
+            for col in cols:
+                pixel = data[row, col]
+                if pixel[3] != 0:
+                    data[row, col] = pixel[0], pixel[1], pixel[2], pixel[3]//2
+        self.half_transparent_tk = ImageTk.PhotoImage(self.scaled_img)
+        self.update_half_transparent = False
+
+    def draw_half_transparent(self, canvas):
+        if self.update_half_transparent:
+            self.create_half_transparent()
+        canvas.create_image(self.get_center(), image=self.half_transparent_tk, tags='drawn_image')
 
     def get_center(self):
         """
