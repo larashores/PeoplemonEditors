@@ -179,6 +179,7 @@ class Outline:
 
         return -> None
         """
+        print('crop clicked', location)
         self.crop_clicked = location
 
     def on_left_release(self, event):
@@ -209,11 +210,11 @@ class Outline:
         if self.center_clicked:
             self.on_translate(event, canvas)
         elif self.resize_clicked:
-            self.on_resize(event)
+            self.on_resize(event, canvas)
         elif self.rotate_clicked:
-            self.on_rotate(event)
+            self.on_rotate(event, canvas)
         elif self.crop_clicked:
-            self.on_crop(event)
+            self.on_crop(event, canvas)
 
     def on_translate(self, event, canvas):
         """
@@ -282,7 +283,7 @@ class Outline:
         self.destroy(canvas)
         self.draw(canvas)
 
-    def on_resize(self, event):
+    def on_resize(self, event, canvas):
         """
         Handles resizing of the outline and image together
 
@@ -340,15 +341,19 @@ class Outline:
         self.location = Point(x, y)
         self.width, self.height = self.get_width(), self.get_height()
 
-        self.image.location = self.location
-        self.image.width = self.get_width()
-        self.image.height = self.get_height()
-        self.image.destroy()
-        self.destroy()
-        self.image.draw()
-        self.draw()
+        self.image.x = int(x)
+        self.image.y = int(y)
+        self.image.width = int(self.get_width())
+        self.image.height = int(self.get_height())
 
-    def on_rotate(self, event):
+        _old = self.image.destroy(canvas)
+        _new = self.image.draw(canvas)
+        del self.id_map[_old]
+        self.id_map[_new] = self.image
+        self.destroy(canvas)
+        self.draw(canvas)
+
+    def on_rotate(self, event, canvas):
         """
         Handles rotating of the outline and image together
 
@@ -368,15 +373,15 @@ class Outline:
                 self.rotation = 90
             else:
                 self.rotation = -90
-        print(self.rotation)
         if y > center.y:
             self.rotation -= 180
         self.rotation %= 360
+        self.rotation = int(self.rotation)
 
-        self.image.set_rotation(self.rotation)
-        self.redraw()
+        self.image.rotation = self.rotation
+        self.redraw(canvas)
 
-    def on_crop(self, event):
+    def on_crop(self, event, canvas):
         """
         Handles cropping of the outline and image together
 
@@ -400,7 +405,8 @@ class Outline:
                 amount = height
             else:
                 amount = event_y - y
-            amount /= height
+            amount *= (255 / height)
+            self.image.crop_top = int(amount)
 
         elif self.crop_clicked == Outline.RIGHT:
             if event_x > self.top_right.x:
@@ -409,7 +415,8 @@ class Outline:
                 amount = width
             else:
                 amount = width - (event_x - x)
-            amount /= width
+            amount *= (255 / width)
+            self.image.crop_right = int(amount)
 
         elif self.crop_clicked == Outline.BOTTOM:
             if event_y < y:
@@ -418,7 +425,8 @@ class Outline:
                 amount = 0
             else:
                 amount = height - (event_y - y)
-            amount /= height
+            amount *= (255 / height)
+            self.image.crop_bottom = int(amount)
 
         elif self.crop_clicked == Outline.LEFT:
             if event_x < x:
@@ -427,17 +435,13 @@ class Outline:
                 amount = width
             else:
                 amount = event_x - x
-            amount /= width
+            amount *= (255 / width)
+            self.image.crop_left = int(amount)
 
         else:
             raise Exception('Incorrect crop set')
 
-        opposite = self.image.crop_limits[(self.crop_clicked - 3) % 4]
-        if opposite + amount > 1:   # Cannot crop into negative
-            amount = 1 - opposite
-        self.image.crop_limits[self.crop_clicked - 1] = amount
-
-        self.redraw()
+        self.redraw(canvas)
 
     def move(self, dx, dy):
         """

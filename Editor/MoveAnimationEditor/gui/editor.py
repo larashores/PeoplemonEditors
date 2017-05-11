@@ -356,7 +356,7 @@ class Editor(ttk.Frame):
 
     def change_frame(self, ind):
         if self.outline:
-            self.outline.destroy()
+            self.outline.destroy(self.canvas)
         self.frame_label.config(text='Frame {}'.format(ind+1))
         self.canvas.delete('drawn_image')
         self.canvas.delete('outline')
@@ -433,7 +433,6 @@ class Editor(ttk.Frame):
             self.controller.animation.frames[self.cur_frame].length = num
 
     def change_transparency(self, event):
-        """
         if self.selected:
             transparency = round(self.transparency.get())
             self.selected.transparency = transparency
@@ -444,7 +443,6 @@ class Editor(ttk.Frame):
             self.ids_to_drawn[_new] = self.selected
             self.outline.destroy(self.canvas)
             self.outline.draw(self.canvas)
-        """
 
     def apply_transparency(self):
         if self.selected:
