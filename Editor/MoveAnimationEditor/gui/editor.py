@@ -1,17 +1,16 @@
-from Editor.MoveAnimationEditor.guicomponents.entrylabel import EntryLabel
-from Editor.MoveAnimationEditor.guicomponents.integercheck import IntegerCheck
-from Editor.MoveAnimationEditor.guicomponents.listchoice import ListChoice
-
-from Editor.MoveAnimationEditor.runtime_models.Outline import Outline
-from Editor.MoveAnimationEditor.saveables.DrawnImage import DrawnImage
-from Editor.saveable.saveableArray import ChangeType
-
-from PIL import ImageTk, Image
 import time
 import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import askokcancel
 
+from PIL import ImageTk, Image
+
+from MoveAnimationEditor.entrylabel import EntryLabel
+from Editor.guicomponents.integercheck import intValidate
+from Editor.guicomponents.listchoice_new import ListChoice
+from Editor.MoveAnimationEditor.runtime_models.Outline import Outline
+from Editor.MoveAnimationEditor.saveables.DrawnImage import DrawnImage
+from Editor.saveable.saveableArray import ChangeType
 
 SIZE = 800, 460
 
@@ -37,13 +36,13 @@ class Editor(ttk.Frame):
 
         self.length_var = tk.IntVar(self)
         self.frame_trace = self.length_var.trace_variable('w', self.change_length)
-        self.length = EntryLabel(self.right_side, text="Frame Length", validate='key', entry_variable=self.length_var,
-                                 validatecommand=IntegerCheck(self, 'u16').vcmd)
+        self.length = EntryLabel(self.right_side, text="Frame Length", entry_variable=self.length_var)
+        intValidate(self.length.entry, 'u16')
 
         self.trans_var = tk.IntVar(self)
         self.transparency = ttk.Scale(self.right_side, from_=0, to=255, command=self.change_transparency)
-        self.transparency_alt = ttk.Entry(self.right_side, width=15, validate='key', justify=tk.CENTER, textvariable=self.trans_var,
-                                          validatecommand=IntegerCheck(self, 'u8').vcmd)
+        self.transparency_alt = ttk.Entry(self.right_side, width=15, justify=tk.CENTER, textvariable=self.trans_var)
+        intValidate(self.transparency_alt, 'u8')
         self.apply = ttk.Button(self.right_side, text='Apply', command=self.apply_transparency)
 
         self.sidebar.pack(side=tk.LEFT, expand=tk.YES, fill=tk.BOTH)
