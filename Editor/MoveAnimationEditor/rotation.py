@@ -1,7 +1,5 @@
-__author__ = 'Vincent'
-
 import numpy as np
-from numpy import cos, sin
+from math import cos, sin
 
 
 def rotation(x, y, center, angle):

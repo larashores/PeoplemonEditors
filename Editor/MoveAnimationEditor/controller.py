@@ -7,8 +7,6 @@ from Editor.MoveAnimationEditor.saveables.saveables import AnimationExport, Fram
 import os
 from PIL import Image
 from tkinter.filedialog import askopenfilename
-from tkinter import ttk
-import tkinter as tk
 
 
 class Controller:

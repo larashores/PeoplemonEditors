@@ -1,7 +1,6 @@
-__author__ = 'Vincent'
-
 import tkinter as tk
 from tkinter import ttk
+
 
 class EntryLabel(ttk.Frame):
     """

@@ -5,7 +5,7 @@ from tkinter.messagebox import askokcancel
 
 from PIL import ImageTk, Image
 
-from MoveAnimationEditor.entrylabel import EntryLabel
+from Editor.MoveAnimationEditor.entrylabel import EntryLabel
 from Editor.guicomponents.integercheck import intValidate
 from Editor.guicomponents.listchoice_new import ListChoice
 from Editor.MoveAnimationEditor.runtime_models.Outline import Outline
@@ -85,7 +85,7 @@ class Editor(ttk.Frame):
         self.ids_to_drawn = {}      # All DrawnImage's on the canvas can be references through id with this map
 
         # Create the background photo
-        image = Image.open('icons\\layout.png')
+        image = Image.open('resources\\layout.png')
         self.background = ImageTk.PhotoImage(image)
         self.canvas.create_image(image.size[0]//2, image.size[1]//2, image=self.background)
 

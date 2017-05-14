@@ -1,17 +1,16 @@
+from MoveAnimationEditor.controller import Controller
+from Editor.MoveAnimationEditor.gui.editor import Editor
+from Editor.MoveAnimationEditor.gui.menu import EditorMenu
+
 import tkinter as tk
 from tkinter import ttk
 
-from MoveAnimationEditor.gui.editor import Editor
 import os
-
-from MoveAnimationEditor.controller import Controller
-from Editor.MoveAnimationEditor.gui.menu import EditorMenu
-
 
 if __name__ == '__main__':
     controller = Controller()
     root = tk.Tk()
-    root.iconbitmap(os.path.join('icons\\editor.ico'))
+    root.iconbitmap(os.path.join('resources\\editor.ico'))
     root.title("Move Animation Editor")
     root.bind('<Pause>', lambda event: controller.add_frame())
     root.bind('<End>', lambda event: controller.insert_frame())

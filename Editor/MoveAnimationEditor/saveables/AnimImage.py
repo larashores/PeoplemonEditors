@@ -6,3 +6,4 @@ from Editor.saveable.saveableImage import SaveableImage
 class AnimImage(Composite):
     name = SaveableString
     image = SaveableImage
+

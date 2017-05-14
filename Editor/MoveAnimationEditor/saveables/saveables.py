@@ -5,6 +5,9 @@ from Editor.saveable.saveableArray import array
 from Editor.MoveAnimationEditor.saveables.Frame import Frame
 from Editor.MoveAnimationEditor.saveables.AnimImage import AnimImage
 
+import tkinter as tk
+from tkinter import ttk
+
 
 class AnimImageOld(Composite):
     name = SaveableString
@@ -20,20 +23,28 @@ class Animation(Composite):
 
     def load_in_place(self, byte_array, pre_generate_images=False):
         Composite.load_in_place(self, byte_array)
-
         names_to_image = {}
         for anim_image in self.images:
             names_to_image[anim_image.name] = anim_image
 
         if pre_generate_images:
-            print("Total Frames", len(self.frames))
+            window = tk.Toplevel()
+            progress = ttk.Progressbar(window, orient=tk.HORIZONTAL,
+                                       maximum=len(self.frames)-1,
+                                       length=200,
+                                       mode='determinate')
+
+            ttk.Label(window, text='Loading Animation', style='Title.TLabel').pack()
+            progress.pack(expand=tk.YES, fill=tk.X, padx=(10, 10), pady=(0, 10))
         for ind, frm in enumerate(self.frames):
-            if pre_generate_images:
-                print("Pre-generating Frame {}".format(ind+1))
             for drawn in frm.images:
                 drawn.set_image(names_to_image[drawn.name])
             if pre_generate_images:
                 frm.pre_generate_images()
+                progress.step(1)
+                window.update()
+        if pre_generate_images:
+            window.destroy()
 
 
 class PieceExport(Composite):

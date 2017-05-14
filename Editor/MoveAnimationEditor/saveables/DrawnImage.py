@@ -45,8 +45,9 @@ class DrawnImage(Composite):
         self.update_half_transparent = True
 
     def item_changed(self, key):
-        self.changed = True
-        self.update_half_transparent = True
+        if key != 'x' and key != 'y':
+            self.changed = True
+            self.update_half_transparent = True
 
     def copy(self):
         """

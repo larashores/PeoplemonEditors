@@ -1,5 +1,6 @@
-import MoveAnimationEditor.rotation as rt
-from MoveAnimationEditor.gui.point import Point
+import Editor.MoveAnimationEditor.rotation as rt
+from Editor.MoveAnimationEditor.gui.point import Point
+
 import numpy as np
 
 

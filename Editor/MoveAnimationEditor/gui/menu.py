@@ -1,11 +1,12 @@
+
+
+from Editor.utilities.location_saver import save_location, load_locations, load_location
+
 import os
 import tkinter as tk
 from tkinter.messagebox import showinfo, showerror, askokcancel
 from tkinter.simpledialog import askinteger
 from tkinter.filedialog import askopenfilename, asksaveasfilename
-
-from Editor.utilities.location_saver import save_location, load_locations, load_location
-
 
 LOCATION_SAVE = 'move_animation_editor_save_path'
 LOCATION_LOAD = 'move_animation_editor_load_path'
