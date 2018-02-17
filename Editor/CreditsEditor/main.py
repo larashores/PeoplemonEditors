@@ -1,19 +1,10 @@
-import tkinter as tk
-from Editor.CreditsEditor.controller import Controller
-from Editor.CreditsEditor.gui.menu import EditorMenu
-from Editor.CreditsEditor.gui.mainGUI import Editor
+from Editor.CreditsEditor.editor import CreditsEditor
+from Editor.utilities.simple_editor import run_simple_editor
 
-import os
+LOCATION = 'credits_editorrrr'
+TITLE = 'Credits Editor'
+EXTENSION = 'credit'
+FILE_TYPE = 'Credits'
 
 if __name__ == '__main__':
-    root = tk.Tk()
-    root.title('Credits Editor')
-    root.iconbitmap(os.path.join(os.getcwd(),'icons/editor.ico'))
-    controller = Controller()
-    menu = EditorMenu(controller)
-    root.configure(menu=menu)
-
-    from Editor import styles
-    edit = Editor(root, controller)
-    edit.pack(expand=tk.YES, fill=tk.BOTH, padx=10)
-    tk.mainloop()
+    run_simple_editor(CreditsEditor, TITLE, EXTENSION, FILE_TYPE, LOCATION)
