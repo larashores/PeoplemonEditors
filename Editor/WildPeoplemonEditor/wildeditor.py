@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from Editor.WildPeoplemonEditor.arrayconnector import ArrayConnector
+from utilities.arrayconnector import ArrayConnector
 from Editor.utilities.make_var import make_int_var, make_str_var
 from Editor.guicomponents.entrylabel_ttk import EntryLabel
 from Editor.guicomponents.listchoice_2 import ListChoice
@@ -42,14 +42,12 @@ class WildEditor:
     def __init__(self, parent=None):
         self.gui = WildEditorGUI(parent)
         self.peoplemon = WildPeoplemon()
+        self.main_saveable = self.peoplemon
         for entry, int_type in ((self.gui.entry_id, self.peoplemon.id),
                                 (self.gui.entry_min, self.peoplemon.min_lvl),
                                 (self.gui.entry_max, self.peoplemon.max_lvl),
                                 (self.gui.entry_rarity, self.peoplemon.rarity)):
             entry.entry.config(textvariable=make_int_var(int_type))
-        for entry in self.gui.code, self.gui.string:
-            entry.state(('disabled', ))
-        self.cur_override = None
 
         self.array_connector = ArrayConnector(self.peoplemon.overrides, self.gui.choices, self.gui.add,
                                               self.gui.code, self.gui.string)
@@ -57,14 +55,9 @@ class WildEditor:
 
     def select_override(self, ind):
         if ind is not None:
-            if self.cur_override is not None:
-                for saveable in self.cur_override:
-                    saveable.signal_changed.disconnect(self.array_connector.on_change)
-            self.cur_override = self.peoplemon.overrides[ind]
-            for saveable in self.cur_override:
-                saveable.signal_changed.connect(self.array_connector.on_change)
-            self.gui.string.entry.config(textvariable=make_str_var(self.cur_override.code))
-            self.gui.code.entry.config(textvariable=make_int_var(self.cur_override.override))
+            current = self.array_connector.cur_selection
+            self.gui.string.entry.config(textvariable=make_str_var(current.code))
+            self.gui.code.entry.config(textvariable=make_int_var(current.override))
 
     def pack(self, **kwargs):
         self.gui.pack(**kwargs)
