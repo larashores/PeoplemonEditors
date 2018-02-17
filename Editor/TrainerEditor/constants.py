@@ -1,5 +1,3 @@
-__author__ = 'Vincent'
-
 # ---------------Behavior Types------------------
 B_STILL = 'Stand Still'
 B_SPIN = 'Spin in Place'
@@ -20,3 +18,8 @@ AI_AGGRESSIVE = 'Aggressive'
 AI_DEFENSIVE = 'Defensive'
 AI_AVERAGE = 'Average'
 AI_ADAPTIVE = 'Adaptive'
+
+D_UP = 'Up'
+D_DOWN = 'Down'
+D_LEFT = 'Left'
+D_RIGHT = 'Right'
