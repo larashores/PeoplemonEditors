@@ -1,5 +1,7 @@
-from saveable.saveable import SaveableType
+from Editor.saveable.saveable import SaveableType
 import struct
+
+from Editor.signal import Signal
 
 
 def saveable_int(int_type):
@@ -27,7 +29,14 @@ def saveable_int(int_type):
         """
 
         def __init__(self, value=0):
+            self.signal_changed = Signal()
             self.value = value
+
+        def __str__(self):
+            return str(self.value)
+
+        def __repr__(self):
+            return self.value.__repr__()
 
         def get(self):
             return self.value
@@ -41,17 +50,16 @@ def saveable_int(int_type):
             if value > _max:
                 raise ValueError("Int {} is too large. Max={}".format(value, _max))
             self.value = value
+            self.signal_changed(value)
 
         def load_in_place(self, byte_array):
             self.value = unpack_integer(byte_array, *str_to_type[int_type])
+            self.signal_changed(self.value)
 
         def to_byte_array(self):
             array = bytearray()
             pack_integer(array, self.value, *str_to_type[int_type])
             return array
-
-        def __str__(self):
-            return str(self.value)
 
     return SaveableInt
 
@@ -108,3 +116,22 @@ def pack_integer(data, _int, size, signed):
     p_int = bytearray(struct.pack('<'+fmt, _int))
     for byte in p_int:
         data.append(byte)
+
+
+if __name__ == '__main__':
+    import tkinter as tk
+    from tkinter import ttk
+    IntType = saveable_int('u32')
+    i = IntType(5)
+
+    root = tk.Tk()
+    label = ttk.Label()
+    entry = ttk.Entry(textvariable=i.make_int_var(root))
+    i.set(45)
+    button = ttk.Button(command=lambda: label.config(text='Int: {}'.format(i.get())))
+
+    label.pack()
+    entry.pack()
+    button.pack()
+
+    root.mainloop()

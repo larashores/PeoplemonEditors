@@ -1,8 +1,9 @@
-from observable import Observable
-from saveable.saveable import SaveableType
-from saveable.saveableInt import saveable_int
-
 import enum
+
+from observable import Observable
+from Editor.saveable.saveable import SaveableType
+from Editor.saveable.saveableInt import saveable_int
+from Editor.signal import Signal
 
 
 class ChangeType(enum.Enum):
@@ -28,6 +29,10 @@ def array(array_type):
             SaveableType.__init__(self)
             Observable.__init__(self)
             self.values = []
+            self.signal_add = Signal()
+            self.signal_remove = Signal()
+            self.array_type = array_type
+            self.signal_changed = Signal()
 
         def __iter__(self, *args, **kwargs):
             """
@@ -40,6 +45,9 @@ def array(array_type):
 
         def __len__(self):
             return len(self.values)
+
+        def __str__(self):
+            return str(self.values)
 
         def set(self, values):
             for value in values:
@@ -58,18 +66,20 @@ def array(array_type):
             Args:
                 val: The array_type value to add
             """
-            if not isinstance(val, array_type):
-                raise ValueError('{} is not of type {}'.format(val, array_type))
-            else:
-                self.values.append(val)
-                self.notify_observers(ChangeType.ADD, val)
+            self.insert(len(self.values), val)
 
         def insert(self, ind, val):
             if not isinstance(val, array_type):
-                raise ValueError('{} is not of type {}'.format(val, array_type))
-            else:
-                self.values.insert(ind, val)
-                self.notify_observers(ChangeType.ADD, val)
+                try:
+                    val = array_type(val)
+                except:
+                    raise ValueError('{} is not of type {}'.format(val, array_type))
+            self.values.insert(ind, val)
+            self.notify_observers(ChangeType.ADD, val)
+            self.signal_add(ind, val)
+            self.signal_changed(ind)
+            if callable(getattr(val, 'signal_changed', None)):
+                val.signal_changed.connect(self.signal_changed)
 
         def remove(self, val):
             """
@@ -78,8 +88,8 @@ def array(array_type):
             Args:
                 val: The value to remove
             """
-            self.values.remove(val)
-            self.notify_observers(ChangeType.REMOVE, val)
+            ind = self.values.index(val)
+            self.pop(ind)
 
         def pop(self, ind):
             """
@@ -90,23 +100,23 @@ def array(array_type):
             """
             val = self.values.pop(ind)
             self.notify_observers(ChangeType.REMOVE, val)
+            self.signal_remove(ind, val)
+            return val
 
         def clear(self):
             """
             Removes all values from the internal list and notifies all observers
             :return:
             """
-            for value in self.values:
-                self.notify_observers(ChangeType.REMOVE, value)
-            self.values.clear()
+            for ind in range(len(self.values)-1, -1, -1):
+                self.pop(ind)
 
         def load_in_place(self, byte_array):
             self.clear()
             size = saveable_int('u16').from_byte_array(byte_array)
             for _ in range(size.value):
                 obj = array_type.from_byte_array(byte_array)
-                self.notify_observers(ChangeType.ADD, obj)
-                self.values.append(obj)
+                self.append(obj)
 
         def to_byte_array(self):
             size = saveable_int('u16')()
@@ -117,3 +127,16 @@ def array(array_type):
             return _array
 
     return SaveableArray
+
+
+if __name__ == '__main__':
+    IntType = saveable_int('u16')
+    ArrayType = array(IntType)
+    a = ArrayType()
+    for i in range(10):
+        a.append(IntType(i))
+    print(a)
+    b = a.to_byte_array()
+    print(b)
+    a.load_in_place(b)
+    print(a)

@@ -1,8 +1,8 @@
 import io
 from PIL import Image
 
-from saveable.saveable import SaveableType
-from saveable.saveableInt import saveable_int
+from Editor.saveable.saveable import SaveableType
+from Editor.saveable.saveableInt import saveable_int
 
 
 class SaveableImage(SaveableType):

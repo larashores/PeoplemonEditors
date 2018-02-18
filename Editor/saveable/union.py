@@ -4,11 +4,12 @@ import inspect
 
 from observable import Observable
 from Editor.saveable.saveable import SaveableType
+from Editor.saveable.saveableInt import saveable_int
 
 from Editor.signal import Signal
 
 
-class CompositeMeta(ABCMeta):
+class UnionMeta(ABCMeta):
     """
     Meta class that keeps track of an ordered list of class attributes to later be used by the Composite class.
     Adds all class attributes of type SaveableType to member __ordered__ of the class __dict__
@@ -17,7 +18,7 @@ class CompositeMeta(ABCMeta):
     def __prepare__(self, name, bases):
         return collections.OrderedDict()
 
-    def __new__(self, name, bases, classdict):
+    def __new__(mcs, name, bases, classdict):
         for base in bases:
             if hasattr(base, '__ordered__'):
                 for key in base.__ordered__:
@@ -26,10 +27,10 @@ class CompositeMeta(ABCMeta):
                                     inspect.isclass(classdict[key]) and
                                     issubclass(classdict[key], SaveableType)]
 
-        return type.__new__(self, name, bases, dict(classdict))
+        return type.__new__(mcs, name, bases, dict(classdict))
 
 
-class Composite(SaveableType, metaclass=CompositeMeta):
+class Union(SaveableType, metaclass=UnionMeta):
     """
     A Saveable Composite type. This class is meant to be subclassed to easily create new SaveableType's made up of
     other SaveableTypes. For each type the object should hold, simply add a class attribute that is equal to that type.
@@ -57,10 +58,26 @@ class Composite(SaveableType, metaclass=CompositeMeta):
         SaveableType.__init__(self)
         self.__dict__['signal_changed'] = Signal()
         for key in self.__ordered__:
-            item = type(self).__dict__[key]()
+            item = type(self).__dict__[key]
             self.__dict__[key] = item
-            if callable(getattr(item, 'signal_changed', None)):
-                item.signal_changed.connect(self.signal_changed)
+        self.__dict__['__current__'] = self.__dict__[self.__ordered__[0]]()
+        self.__dict__['__current_key__'] = self.__ordered__[0]
+
+    def set(self, Type):
+        for key in self.__ordered__:
+            if self.__dict__[key] == Type:
+                self.__current__ = Type()
+                self.__current_key__ = key
+                self._connect_current()
+                self.signal_changed(Type)
+                return
+        raise ValueError('Invalid Type {}'.format(Type))
+
+    def _connect_current(self):
+        self.__current__.signal_changed.connect(self.signal_changed)
+
+    def get(self):
+        return self.__dict__[self.__current_key__]
 
     def __setattr__(self, key, value):
         """
@@ -69,9 +86,12 @@ class Composite(SaveableType, metaclass=CompositeMeta):
         """
         if key in type(self).__ordered__:
             saveable_type = self.__dict__[key]
+            if key != self.__current_key__:
+                self.__current_key__ = key
+                self.__current__ = saveable_type()
             if not callable(getattr(saveable_type, 'set', None)):
                 raise ValueError("Cannot assign directly to '{}' ({})".format(key, type(saveable_type)))
-            saveable_type.set(value)
+            self.__current__.set(value)
         else:
             SaveableType.__setattr__(self, key, value)
 
@@ -81,54 +101,67 @@ class Composite(SaveableType, metaclass=CompositeMeta):
         returns the attribute
         """
         get_attribute = lambda item: SaveableType.__getattribute__(self, item)
-        _dict = get_attribute('__dict__')
         if item not in type(self).__ordered__:
             return get_attribute(item)
-        saveable_type = _dict[item]
-        return saveable_type
-        #return saveable_type.get() if callable(getattr(saveable_type, 'get', None)) else saveable_type
+        _dict = get_attribute('__dict__')
+        set_type = _dict[item]
+        current = _dict['__current__']
+        if type(current) != set_type:
+            return None
+            raise ValueError('Member {} is not currently assigned to the union'.format(item))
+        return current
 
     def load_in_place(self, byte_array):
-        for key in self.__ordered__:
-            self.__dict__[key].load_in_place(byte_array)
+        index = saveable_int('u8')()
+        index.load_in_place(byte_array)
+        index = index.get()
+        if not (0 <= index < len(self.__ordered__)):
+            raise ValueError('Union index {} is out of range'.format(index))
+        key = self.__ordered__[index]
+        self.__current_key__ = key
+        self.__current__ = self.__dict__[key]()
+        self.__current__.load_in_place(byte_array)
+        self.signal_changed(self.__dict__[key])
+        self._connect_current()
 
     def to_byte_array(self):
+        if self.__current__ is None:
+            raise ValueError('Union is null')
+        ind = self.__ordered__.index(self.__current_key__)
         array_ = bytearray()
-        for key in self.__ordered__:
-            array_ += self.__dict__[key].to_byte_array()
+        index = saveable_int('u8')()
+        index.set(ind)
+        array_ += index.to_byte_array()
+        array_ += self.__current__.to_byte_array()
         return array_
 
     def __str__(self):
-        string = '{'
-        for key in self.__ordered__:
-            string += '{}: {}, '.format(key, self.__dict__[key])
-        string = string[:-1]
-        string += '}'
-        return string
+        return str(self.__current__)
 
     def __repr__(self):
-        return self.__str__()
+        return self.__current__.__repr__
 
-    def __iter__(self):
-        for var in self.__ordered__:
-            yield self.__dict__[var]
 
 if __name__ == '__main__':
-    from Editor.saveable.saveableInt import saveable_int
     from Editor.saveable.saveableArray import array
     from Editor.saveable.saveableString import SaveableString
 
-    class Bar(Composite):
-        a = saveable_int('u32')
-        b = array(saveable_int('u16'))
+    U32 = saveable_int('u32')
+    U16 = saveable_int('u16')
+
+    class Bar(Union):
+        a = U32
+        b = U16
         c = SaveableString
 
-    c = Bar()
-    c.a = 43
-    c.b.append(53)
-    c.c = 'adf'
-    print(c)
-    a = c.to_byte_array()
+    a = Bar()
+    a.set(U32)
     print(a)
-    c.load_in_place(a)
-    print(c)
+    a.a = 5
+    data = a.to_byte_array()
+    print(data)
+    a.c = 'HELLO'
+    print(a.to_byte_array())
+    b = Bar()
+    b.load_in_place(data)
+    print(b)
