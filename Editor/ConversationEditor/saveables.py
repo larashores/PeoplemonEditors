@@ -1,4 +1,5 @@
 from Editor.saveable.composite import Composite
+from Editor.saveable.saveablechar import SaveableChar
 from Editor.saveable.saveableInt import saveable_int
 from Editor.saveable.saveableArray import array
 from Editor.saveable.saveableString import SaveableString
@@ -84,6 +85,9 @@ class Run(SaveableString):
 
 
 class Line(Union):
+    TYPE_MAP = {Talk: 't', Options: 'o', Give: 'g', Take: 'r', Jump: 'j',
+                Save: 's', CheckSaved: 'c', JumpPoint: 'l', CheckTalked: 'w', Run: 'z'}
+
     talk = Talk
     option = Options
     give = Give
@@ -94,3 +98,30 @@ class Line(Union):
     point = JumpPoint
     talked = CheckTalked
     run = Run
+
+    def to_byte_array(self):
+        code = SaveableChar()
+        code.set(Line.TYPE_MAP[self.get()])
+        array = code.to_byte_array()
+        array += self.__current__.to_byte_array()
+        return array
+
+    def load_in_place(self, byte_array):
+        code = SaveableChar()
+        code.load_in_place(byte_array)
+        inv_map = {v: k for k, v in Line.TYPE_MAP.items()}
+        if code.get() not in inv_map:
+            raise ValueError('Incorrect Conversation type: ' + code.get())
+        line_type = inv_map[code.get()]
+        loaded = False
+        for key in self.__ordered__:
+            if self.__dict__[key] == line_type:
+                self.__current_key__ = key
+                self.__current__ = self.__dict__[key]()
+                self.__current__.load_in_place(byte_array)
+                self.signal_changed(self.__dict__[key])
+                self._connect_current()
+                loaded = True
+                break
+        if not loaded:
+            raise ValueError('Could not find correct type ' + code.get())

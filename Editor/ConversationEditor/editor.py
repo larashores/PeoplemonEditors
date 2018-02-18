@@ -47,7 +47,6 @@ class ConversationEditorGUI(ttk.Frame):
         sep = ttk.Separator(self, orient=tk.VERTICAL)
         edit_label = ttk.Label(self, text='Line Editor', style='Subtitle.TLabel')
         self.editor_widget = MultiWidget(self)
-        self.editor_widget.change_widget(NoSelectionWidget)
 
         left_frm.pack(side=tk.LEFT, expand=tk.YES, fill=tk.BOTH)
         title.pack()
@@ -57,6 +56,7 @@ class ConversationEditorGUI(ttk.Frame):
         sep.pack(side=tk.LEFT, fill=tk.Y, padx=10)
         edit_label.pack()
         self.editor_widget.pack(side=tk.LEFT, expand=tk.YES, fill=tk.BOTH)
+        self.change_editor_widget(NoSelectionWidget)
 
     def change_editor_widget(self, widget):
         self.editor_widget.change_widget(widget)

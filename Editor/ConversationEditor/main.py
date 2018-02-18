@@ -3,7 +3,7 @@ from Editor.utilities.simple_editor import run_simple_editor
 
 LOCATION = 'conversation_editorrrrr'
 TITLE = 'Convrsation Editor'
-EXTENSION = 'convo'
+EXTENSION = 'conv'
 FILE_TYPE = 'Conversation'
 
 if __name__ == '__main__':
