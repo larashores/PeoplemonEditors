@@ -6,8 +6,12 @@ import tkinter as tk
 from tkinter import ttk
 
 import os
+import logging
 
 if __name__ == '__main__':
+    #logging.basicConfig(level=logging.DEBUG,
+    #                    format='%(asctime)s %(levelname)s "%(message)s"')
+
     controller = Controller()
     root = tk.Tk()
     root.iconbitmap(os.path.join('resources\\editor.ico'))

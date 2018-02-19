@@ -6,6 +6,7 @@ import os
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showerror
 
+
 class Controller:
     def __init__(self):
         self.canvas = None

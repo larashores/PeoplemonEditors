@@ -6,9 +6,9 @@ from Editor.CreditsEditor.saveables import *
 from Editor.guicomponents.entrylabel_ttk import EntryLabel
 from Editor.guicomponents.listchoice_2 import ListChoice
 from Editor.guicomponents.integercheck import intValidate
-from Editor.guicomponents.widgetgrid import WidgetGrid
 from Editor.guicomponents.multiwidget import MultiWidget
 from Editor.utilities.arrayconnector import ArrayConnector
+from Editor.utilities.addbuttonconnector import AddButtonConnector
 from Editor.utilities.make_var import make_str_var, make_int_var
 from Editor.signal import Signal
 
@@ -89,27 +89,34 @@ class ImageEditorGUI(ttk.Frame):
 
 
 class CreditsEditor:
+    TYPE_MAP = {ImageType: ImageEditorGUI, TextType: TextEditorGUI}
+
     def __init__(self, parent=None):
         self.gui = CreditsEditorGUI(parent)
         self.credits = array(Credit)()
         self.main_saveable = self.credits
-        self.last_credit = None
 
-        self.connector = ArrayConnector(self.credits, self.gui.list, None, self.gui.x_pos, self.gui.y_buf)
+        self.array_connector = ArrayConnector(self.credits, self.gui.list, None, self.gui.x_pos, self.gui.y_buf)
+        self.add_button_connector = AddButtonConnector(self.credits, self.gui.list,
+                                                       {self.gui.add_text_button: TextType,
+                                                        self.gui.add_image_button: ImageType})
+
+        self.add_button_connector.signal_about_to_add.connect(self.on_credit_about_to_add)
         self.gui.list.signal_select.connect(self.credit_changed)
-        self.credits.signal_remove.connect(self.on_credit_delete)
-        self.gui.add_text_button.config(command=self.on_add_text_clicked)
-        self.gui.add_image_button.config(command=self.on_add_image_clicked)
+        self.gui.list.signal_delete.connect(self.on_delete)
         self.credits.signal_add.connect(self.on_credit_add)
 
+    @staticmethod
+    def on_credit_about_to_add(credit, type):
+        credit.type.set(type)
+
+    def on_delete(self):
+        if not len(self.gui.list):
+            self.gui.multi_widget.change_widget(None)
+
     def credit_changed(self, ind):
-        print('selection')
-        current = self.connector.cur_selection
-        if self.last_credit is not None:
-            self.last_credit.signal_changed.clear()
-        self.last_credit = current
-        widget_map = {ImageType: ImageEditorGUI, TextType: TextEditorGUI}
-        self.gui.multi_widget.change_widget(widget_map[current.type.get()])
+        current = self.array_connector.cur_selection
+        self.gui.multi_widget.change_widget(self.TYPE_MAP[current.type.get()])
         widget = self.gui.multi_widget.current_widget
         if current.type.get() == ImageType:
             widget.path.entry.configure(textvariable=make_str_var(current.type.image))
@@ -125,13 +132,13 @@ class CreditsEditor:
         self.gui.y_buf.entry.config(textvariable=make_int_var(current.y_buf))
 
     def on_color_selected(self, r, g, b):
-        current = self.connector.cur_selection
+        current = self.array_connector.cur_selection
         current.type.text.red = r
         current.type.text.green = g
         current.type.text.blue = b
 
     def on_color_changed(self, val):
-        text_credit = self.connector.cur_selection.type.text
+        text_credit = self.array_connector.cur_selection.type.text
         r, g, b = text_credit.red.get(), text_credit.green.get(), text_credit.blue.get()
         self.gui.multi_widget.current_widget.change_color(r, g, b)
         self.gui.list.itemconfig(self.gui.list.get_selection(), foreground=TextEditorGUI.rgb_to_hex(r, g, b))
@@ -142,25 +149,6 @@ class CreditsEditor:
             self.gui.list.itemconfig(ind,
                                      foreground=TextEditorGUI.rgb_to_hex(
                                          text.red.get(), text.green.get(), text.blue.get()))
-
-    def on_add_text_clicked(self):
-        self.on_add(TextType)
-
-    def on_add_image_clicked(self):
-        self.on_add(ImageType)
-
-    def on_add(self, Type):
-        credit = Credit()
-        credit.type.set(Type)
-        if self.gui.checkVar.get():
-            self.credits.insert(self.credits.list.get_cur_selection())
-        else:
-            self.credits.append(credit)
-        self.gui.list.set_selection(-1)
-
-    def on_credit_delete(self, ind, val):
-        if not len(self.credits) and self.gui.multi_widget.current_widget is not None:
-            self.gui.multi_widget.change_widget(None)
 
     def pack(self, **kwargs):
         self.gui.pack(**kwargs)

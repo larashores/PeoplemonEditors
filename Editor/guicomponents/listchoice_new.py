@@ -45,7 +45,7 @@ class ListChoiceGUI(ttk.Frame):
     def MakeWidgets(self, kwargs):
         frm = ttk.Frame(self)
         sbar = ttk.Scrollbar(frm)
-        lbox = tk.Listbox(frm, **kwargs)
+        lbox = tk.Listbox(frm, selectmode=tk.SINGLE,  **kwargs)
         sbar.config(command=lbox.yview)
         lbox.config(yscrollcommand=sbar.set)
         lbox.config(selectmode=tk.SINGLE)
@@ -122,11 +122,29 @@ class ListChoice:
         self.model.setCurrentIndex(-1)
         self.update()
 
-    def setPosition(self, fraction):
-        self.gui.lbox.yview_moveto(fraction)
+    def insertChoice(self, ind, string):
+        if ind < 0 and len(self) != 0:
+            ind %= (len(self) + 1)
+        self.model.insertChoice(ind, string)
+        self.model.setCurrentIndex(ind)
+        self.update()
 
-    def getPosition(self):
-        return self.gui.lbox.yview()[0]
+    def setPosition(self, ind):
+        if ind < 0 and len(self) != 0:
+            ind %= (len(self) + 1)
+        self.gui.lbox.yview_moveto(ind)
+
+    def get_top(self):
+        return (self.gui.lbox.yview()[0]) * len(self)
+
+    def set_top(self, top):
+        if len(self) == 0:
+            return
+        value = top / len(self)
+        self.gui.lbox.yview_moveto(value)
+
+    def getYPosition(self):
+        return self.gui.lbox.yview()[1]
 
     def delete(self, ind):
         self.model.delete(int(ind))
@@ -137,6 +155,7 @@ class ListChoice:
     def clear(self):
         self.model.choices.clear()
         self.update()
+        self.model.cur_selection = None
 
     def update(self):
         self.gui.lbox.delete(0, tk.END)
@@ -150,10 +169,13 @@ class ListChoice:
         return self.model.getCurentIndex()
 
     def setSelection(self, ind):
+        if ind < 0 and ind >= -len(self):
+            ind %= len(self)
+
         l_ind = self.getSelection()
         if l_ind != int(ind):
             self.model.setCurrentIndex(ind)
-            self.gui.updateSelection()
+        self.gui.updateSelection()
 
     def up(self):
         l_ind = self.getSelection()
@@ -167,6 +189,8 @@ class ListChoice:
         if l_ind != self.getSelection():
             self.gui.updateSelection()
 
+    def getPosition(self):
+        return self.gui.lbox.yview()[0]
 
 class ListChoiceModel:
     def __init__(self):
@@ -182,8 +206,13 @@ class ListChoiceModel:
         if self.cur_selection is None:
             self.cur_selection = 0
 
+    def insertChoice(self, ind, string):
+        self.choices.insert(ind, string)
+        if self.cur_selection is None:
+            self.cur_selection = 0
+
     def setCurrentIndex(self, ind):
-        if ind < 0:
+        if ind is not None and ind < 0:
             ind = len(self.choices) - ind
         self.cur_selection = ind
 

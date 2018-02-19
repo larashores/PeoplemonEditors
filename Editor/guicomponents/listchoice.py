@@ -16,6 +16,7 @@ import inspect
 
 from tkinter import *
 
+
 class ListChoiceGUI(Frame):
     '''
     Purpose:    Scrolling Listbox where entries can be added and deleted
@@ -39,8 +40,8 @@ class ListChoiceGUI(Frame):
     def MakeWidgets(self,kwargs):
         frm = Frame(self)
         sbar = Scrollbar(frm)
-        lbox = Listbox(frm,**kwargs)
-        frm.pack(expand=YES,fill=X)
+        lbox = Listbox(frm, **kwargs)
+        frm.pack(expand=YES, fill=X)
         sbar.config(command=lbox.yview)
         lbox.config(yscrollcommand=sbar.set)
         lbox.config(selectmode=SINGLE)

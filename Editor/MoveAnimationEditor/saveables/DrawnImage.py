@@ -8,9 +8,6 @@ from Editor.MoveAnimationEditor.saveables.AnimImage import AnimImage
 
 from PIL import ImageTk, Image
 
-import copy as cp
-import numpy as np
-
 
 class DrawnImage(Composite):
     name = SaveableString
@@ -38,11 +35,10 @@ class DrawnImage(Composite):
             self.scale_original()
         self.register(self.item_changed)
 
-        self.canvas_to_id = {}
-        self.id_to_canvas = {}
         self.half_transparent = None
         self.half_transparent_tk = None
         self.update_half_transparent = True
+        self.level = None
 
     def item_changed(self, key):
         if key != 'x' and key != 'y':
@@ -163,10 +159,7 @@ class DrawnImage(Composite):
         if self.changed:
             self.create_image()
         tags = 'drawn_image'
-        _id = canvas.create_image(self.get_center(), image=self.img_tk, tags=tags)
-        self.canvas_to_id[canvas] = _id
-        self.id_to_canvas[_id] = canvas
-        return _id
+        canvas.create_image(self.get_center(), reference=self, level=self.level, image=self.img_tk, tags=tags)
 
     def create_half_transparent(self):
         if self.changed:
@@ -185,7 +178,8 @@ class DrawnImage(Composite):
     def draw_half_transparent(self, canvas):
         if self.update_half_transparent:
             self.create_half_transparent()
-        canvas.create_image(self.get_center(), image=self.half_transparent_tk, tags='drawn_image')
+        level = self.level - 100 if self.level else None
+        canvas.create_image(self.get_center(), level=level, image=self.half_transparent_tk, tags='drawn_image')
 
     def get_center(self):
         """
@@ -207,9 +201,11 @@ class DrawnImage(Composite):
 
         return -> None
         """
-        _id = self.canvas_to_id.pop(canvas)
-        canvas.delete(_id)
-        return _id
+        canvas.delete(self)
+
+    def redraw(self, canvas):
+        self.destroy(canvas)
+        return self.draw(canvas)
 
     def move(self, dx, dy):
         """
@@ -225,6 +221,3 @@ class DrawnImage(Composite):
         """
         self.x += dx
         self.y += dy
-
-    def get_id(self, canvas):
-        return self.canvas_to_id[canvas]

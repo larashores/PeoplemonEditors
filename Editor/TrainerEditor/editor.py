@@ -8,6 +8,7 @@ from Editor.guicomponents.widgetgrid import WidgetGrid
 from Editor.utilities.make_var import make_str_var, make_int_var, make_combo_var, make_check_var
 from Editor.utilities.arrayconnector import ArrayConnector
 
+from Editor.TrainerEditor.behaviorwidget import BehaviorWidget, BehaviorWidgetConnector
 from Editor.TrainerEditor.constants import *
 from Editor.TrainerEditor.saveables import *
 
@@ -53,7 +54,7 @@ class TrainerEditorGUI(ttk.Frame):
         self.right_frm = ttk.Frame(self)
         sep2 = ttk.Separator(self.right_frm, orient=tk.VERTICAL)
         motion_lbl = ttk.Label(self.right_frm, text='Motion Options', style='Subtitle.TLabel')
-        self.current_motion_widget = Still(self.right_frm)
+        self.behavior_widget = BehaviorWidget(self.right_frm)
 
         title.pack()
         left_frm.pack(expand=tk.YES, fill=tk.BOTH, side=tk.LEFT)
@@ -77,17 +78,12 @@ class TrainerEditorGUI(ttk.Frame):
         self.right_frm.pack(expand=tk.YES, fill=tk.BOTH, side=tk.LEFT)
         sep2.pack(fill=tk.Y, padx=(10, 0), side=tk.LEFT)
         motion_lbl.pack(padx=10)
-        self.current_motion_widget.pack()
+        self.behavior_widget.pack(expand=tk.YES, fil=tk.BOTH)
 
         self.ai_type.state(['readonly'])
         self.motion_type.state(['readonly'])
         intValidate(self.sight_range.entry, 'u8')
         intValidate(self.item_id.entry, 'u16')
-
-    def change_widget(self, WidgetType):
-        if self.current_motion_widget:
-            self.current_motion_widget.destroy()
-        self.current_motion_widget = WidgetType(self.right_frm)
 
 
 class TrainerEditor:
@@ -120,9 +116,7 @@ class TrainerEditor:
                         B_FOLLOW: FollowPathBehavior, B_WANDER: WanderBehavior}
         self.gui.ai_type.config(textvariable=make_combo_var(self.trainer.ai_type, ai_map))
         self.gui.motion_type.config(textvariable=make_combo_var(self.trainer.behavior, behavior_map))
-        self.trainer.behavior.signal_changed.connect(self.behavior_changed)
-
-        self.last_behavior = None
+        self.behavior_connect = BehaviorWidgetConnector(self.gui.behavior_widget, self.trainer.behavior)
 
     def select_peoplemon(self, ind):
         if ind is not None:
@@ -133,43 +127,6 @@ class TrainerEditor:
         if ind is not None:
             current = self.item_connector.cur_selection
             self.gui.item_id.entry.config(textvariable=make_int_var(current))
-
-    def select_node(self, ind):
-        if ind is not None:
-            node_widget = self.gui.current_motion_widget
-            current = self.node_connector.cur_selection
-            combo_map = {D_UP: 0, D_RIGHT: 1, D_DOWN: 2, D_LEFT: 3}
-            node_widget.steps.entry.config(textvariable=make_int_var(current.num_steps))
-            node_widget.direction.config(textvariable=make_combo_var(current.direction, combo_map))
-
-    def behavior_changed(self, Type):
-        widget_map = {StandStillBehavior: Still, SpinInPlaceBehavior: SpinInPlace,
-                      FollowPathBehavior: FollowPath, WanderBehavior: WanderFreely}
-        self.gui.change_widget(widget_map[Type])
-        if Type == StandStillBehavior:
-            self.gui.current_motion_widget.pack()
-        elif Type == WanderBehavior:
-            self.gui.current_motion_widget.pack(padx=10, fill=tk.X)
-            self.gui.current_motion_widget.radius.entry.config(
-                textvariable=make_int_var(self.trainer.behavior.wander.radius))
-        elif Type == SpinInPlaceBehavior:
-            self.gui.current_motion_widget.pack(padx=10, fill=tk.X)
-            dir_map = {D_CLOCK: 0, D_COUNTER: 1, D_RANDOM: 2}
-            self.gui.current_motion_widget.combo.config(
-                textvariable=make_combo_var(self.trainer.behavior.spin.motion, dir_map))
-        elif Type == FollowPathBehavior:
-            for node in self.trainer.behavior.follow.nodes:
-                self.gui.current_motion_widget.node_list.clear()
-                self.gui.current_motion_widget.node_list.append(str(node), node)
-            self.gui.current_motion_widget.pack(padx=10, fill=tk.BOTH)
-            self.gui.current_motion_widget.check.config(
-                variable=make_check_var(self.trainer.behavior.follow.reverse_loop))
-            self.node_connector = ArrayConnector(self.trainer.behavior.follow.nodes,
-                                                 self.gui.current_motion_widget.node_list,
-                                                 self.gui.current_motion_widget.add_button,
-                                                 self.gui.current_motion_widget.direction,
-                                                 self.gui.current_motion_widget.steps)
-            self.gui.current_motion_widget.node_list.signal_select.connect(self.select_node)
 
     def pack(self, **kwargs):
         self.gui.pack(**kwargs)

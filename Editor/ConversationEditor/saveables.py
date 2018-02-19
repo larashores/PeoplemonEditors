@@ -113,15 +113,7 @@ class Line(Union):
         if code.get() not in inv_map:
             raise ValueError('Incorrect Conversation type: ' + code.get())
         line_type = inv_map[code.get()]
-        loaded = False
-        for key in self.__ordered__:
-            if self.__dict__[key] == line_type:
-                self.__current_key__ = key
-                self.__current__ = self.__dict__[key]()
-                self.__current__.load_in_place(byte_array)
-                self.signal_changed(self.__dict__[key])
-                self._connect_current()
-                loaded = True
-                break
-        if not loaded:
+        if line_type not in self.__revtypemap__:
             raise ValueError('Could not find correct type ' + code.get())
+        self.set(line_type)
+        self.__current__.load_in_place(byte_array)

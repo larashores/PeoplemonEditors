@@ -4,12 +4,14 @@ from tkinter import *
 from tkinter import ttk
 from Editor.AnimationEditor.gui import entrylabel
 
+
 def askChange(previous):
     answer = []
     window = ScaleChange(answer, previous)
     window.mainloop()
     if answer:
-        return int(answer[0])
+        return float(answer[0])
+
 
 class ScaleChange(Toplevel):
     def __init__(self, answer_lst, previous):

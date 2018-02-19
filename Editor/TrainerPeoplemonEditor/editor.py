@@ -60,10 +60,10 @@ class TrainerPeoplemonEditorGUI(ttk.Frame):
         self.ev_widgets, grid4 = self.make_base_stats_widget(rightFrm)
 
         title.pack()
-        second_row_frm.pack(expand=tk.YES, fill=tk.BOTH, padx=10, pady=(0, 10))
+        second_row_frm.pack(expand=tk.YES, fill=tk.BOTH)
         leftFrm.pack(expand=tk.YES, fill=tk.BOTH, side=tk.LEFT,)
         grid1.pack(expand=tk.YES, fill=tk.X)
-        sep3.pack(fill=tk.X, padx=(5, 5), pady=(12, 0))
+        sep3.pack(fill=tk.X, padx=(5, 5), pady=(10, 0))
         move_lbl.pack()
         moves_lbl_frm.pack(fill=tk.X, padx=(3, 3))
         id_lbl.pack(side=tk.LEFT, expand=tk.YES)

@@ -26,6 +26,8 @@ class UnionMeta(ABCMeta):
         classdict['__ordered__'] = [key for key in classdict.keys() if
                                     inspect.isclass(classdict[key]) and
                                     issubclass(classdict[key], SaveableType)]
+        classdict['__typemap__'] = {key: classdict[key] for key in classdict['__ordered__']}
+        classdict['__revtypemap__'] = {classdict[key]: key for key in classdict['__ordered__']}
 
         return type.__new__(mcs, name, bases, dict(classdict))
 
@@ -56,41 +58,36 @@ class Union(SaveableType, metaclass=UnionMeta):
         Creates an instance attribute for each type in the class attribute '__ordered__'.
         """
         SaveableType.__init__(self)
-        self.__dict__['signal_changed'] = Signal()
-        for key in self.__ordered__:
-            item = type(self).__dict__[key]
-            self.__dict__[key] = item
-        self.__dict__['__current__'] = self.__dict__[self.__ordered__[0]]()
-        self.__dict__['__current_key__'] = self.__ordered__[0]
-
-    def set(self, Type):
-        for key in self.__ordered__:
-            if self.__dict__[key] == Type:
-                self.__current__ = Type()
-                self.__current_key__ = key
-                self._connect_current()
-                self.signal_changed(Type)
-                return
-        raise ValueError('Invalid Type {}'.format(Type))
-
-    def _connect_current(self):
+        self.signal_changed = Signal()
+        self.__current__ = self.__typemap__[self.__ordered__[0]]()
         self.__current__.signal_changed.connect(self.signal_changed)
 
+    def set(self, Type):
+        if Type in self.__revtypemap__:
+            self.__current__.signal_changed.disconnect(self.signal_changed)
+            self.__current__ = Type()
+            self.__current__.signal_changed.connect(self.signal_changed)
+            self.signal_changed(Type)
+            return
+        raise ValueError('Invalid Type {}'.format(Type))
+
     def get(self):
-        return self.__dict__[self.__current_key__]
+        return type(self.__current__)
+
+    def get_current(self):
+        return self.__current__
 
     def __setattr__(self, key, value):
         """
         Catches all attribute setting. Only allows the setting if the attribute being set has a 'set' method. If it does
         calls attribute.set(value). Otherwise setting is disallowed
         """
-        if key in type(self).__ordered__:
-            saveable_type = self.__dict__[key]
-            if key != self.__current_key__:
-                self.__current_key__ = key
-                self.__current__ = saveable_type()
-            if not callable(getattr(saveable_type, 'set', None)):
-                raise ValueError("Cannot assign directly to '{}' ({})".format(key, type(saveable_type)))
+        if key in self.__typemap__:
+            Type = self.__typemap__[key]
+            if not callable(getattr(Type, 'set', None)):
+                raise ValueError("Cannot assign directly to '{}' ({})".format(key, type(Type)))
+            if key != self.__revtypemap__[type(self.__current__)]:
+                self.set(Type)
             self.__current__.set(value)
         else:
             SaveableType.__setattr__(self, key, value)
@@ -101,14 +98,12 @@ class Union(SaveableType, metaclass=UnionMeta):
         returns the attribute
         """
         get_attribute = lambda item: SaveableType.__getattribute__(self, item)
-        if item not in type(self).__ordered__:
+        if item not in get_attribute('__typemap__'):
             return get_attribute(item)
-        _dict = get_attribute('__dict__')
-        set_type = _dict[item]
-        current = _dict['__current__']
-        if type(current) != set_type:
+        current = get_attribute('__dict__')['__current__']
+        SetType = get_attribute('__typemap__')[item]
+        if type(current) != SetType:
             return None
-            raise ValueError('Member {} is not currently assigned to the union'.format(item))
         return current
 
     def load_in_place(self, byte_array):
@@ -117,17 +112,14 @@ class Union(SaveableType, metaclass=UnionMeta):
         index = index.get()
         if not (0 <= index < len(self.__ordered__)):
             raise ValueError('Union index {} is out of range'.format(index))
-        key = self.__ordered__[index]
-        self.__current_key__ = key
-        self.__current__ = self.__dict__[key]()
+        Type = self.__typemap__[self.__ordered__[index]]
+        self.set(Type)
         self.__current__.load_in_place(byte_array)
-        self.signal_changed(self.__dict__[key])
-        self._connect_current()
 
     def to_byte_array(self):
         if self.__current__ is None:
             raise ValueError('Union is null')
-        ind = self.__ordered__.index(self.__current_key__)
+        ind = self.__ordered__.index(self.__revtypemap__[type(self.__current__)])
         array_ = bytearray()
         index = saveable_int('u8')()
         index.set(ind)
@@ -153,8 +145,11 @@ if __name__ == '__main__':
         a = U32
         b = U16
         c = SaveableString
+        d = array(U32)
 
+    print()
     a = Bar()
+    print(a.__dict__)
     a.set(U32)
     print(a)
     a.a = 5

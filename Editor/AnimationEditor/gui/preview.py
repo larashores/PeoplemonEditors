@@ -40,7 +40,7 @@ class PreviewWindow(Toplevel):
         ind = self.cur_frame.get()
         length = self.viewer.images[ind][1]
         self.after(length, self.nextImage)
-        self.iconbitmap(os.path.join('icons\\editor.ico'))
+        self.iconbitmap(os.path.join('resources\\editor.ico'))
 
 
     def nextImage(self):

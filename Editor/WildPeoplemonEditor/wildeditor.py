@@ -27,15 +27,15 @@ class WildEditorGUI(ttk.Frame):
             intValidate(entry.entry, 'u16')
 
         title.pack(padx=10)
-        self.entry_id.pack(padx=10, expand=tk.YES, fill=tk.X)
-        self.entry_min.pack(padx=10, expand=tk.YES, fill=tk.X)
-        self.entry_max.pack(padx=10, expand=tk.YES, fill=tk.X)
-        self.entry_rarity.pack(padx=10, expand=tk.YES, fill=tk.X)
+        self.entry_id.pack(expand=tk.YES, fill=tk.X)
+        self.entry_min.pack(expand=tk.YES, fill=tk.X)
+        self.entry_max.pack(expand=tk.YES, fill=tk.X)
+        self.entry_rarity.pack(expand=tk.YES, fill=tk.X)
         sep.pack(fill=tk.X, pady=(12, 0), padx=5)
-        self.string.pack(padx=10, expand=tk.YES, fill=tk.X)
-        self.code.pack(padx=10, expand=tk.YES, fill=tk.X)
-        self.choices.pack(padx=10, pady=(10, 5), expand=tk.YES, fill=tk.X)
-        self.add.pack(pady=(5, 10))
+        self.string.pack(expand=tk.YES, fill=tk.X)
+        self.code.pack(expand=tk.YES, fill=tk.X)
+        self.choices.pack(pady=(10, 5), expand=tk.YES, fill=tk.X)
+        self.add.pack(pady=(5, 0))
 
 
 class WildEditor:

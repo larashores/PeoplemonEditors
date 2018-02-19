@@ -123,7 +123,6 @@ class ConversationEditor:
         self.option_connector = ArrayConnector(line.option.options, widget.options, widget.add_option,
                                                widget.option_display, widget.jump)
         widget.options.signal_select.connect(self.option_selected)
-
     def option_selected(self, ind):
         widget = self.gui.editor_widget.current_widget
         option = self.array_connector.cur_selection.option.options[ind]

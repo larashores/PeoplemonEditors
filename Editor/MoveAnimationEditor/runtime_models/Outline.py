@@ -4,6 +4,10 @@ from Editor.MoveAnimationEditor.gui.point import Point
 import numpy as np
 
 
+def bound(min_, val, max_):
+    return max(min_, min(val, max_))
+
+
 class Outline:
     """
     The outline that surrounds a shape
@@ -17,9 +21,7 @@ class Outline:
     RIGHT = 3
     BOTTOM = 4
 
-    NEXT_ID = 0
-
-    def __init__(self, canvas, image, id_map):
+    def __init__(self, canvas, image):
         self.image = image              # The CanvasImage object
         self.canvas = canvas
         self.rotation = image.rotation
@@ -38,10 +40,6 @@ class Outline:
         self.resize_clicked = None
         self.rotate_clicked = False
         self.crop_clicked = None
-        self.id_map = id_map
-
-        self.id = self.NEXT_ID
-        self.NEXT_ID += 1
 
     def draw(self, canvas):
         """
@@ -53,11 +51,11 @@ class Outline:
         return -> None
         """
         center = self.get_center()
-        tags = ('anim', 'outline-{}'.format(self.id))
+        tags = ('anim',)
 
         # -------------Make mover----------------
         coords = center.x - 10, center.y - 10, center.x + 10, center.y + 10
-        mover = canvas.create_oval(coords, fill='grey', tags=tags)
+        mover = canvas.create_oval(coords, fill='grey', tags=tags, reference=self)
         canvas.tag_bind(mover, '<Button-1>', self.on_translate_click)
         # ---------------------------------------
 
@@ -74,7 +72,7 @@ class Outline:
             point.set(*rt.rotation(point.x, point.y, self.get_center(), self.rotation))
         for coord1, coord2 in ((top_left_crop, top_right_crop), (top_right_crop, bottom_right_crop),
                                (bottom_right_crop, bottom_left_crop), (bottom_left_crop, top_left_crop)):
-            canvas.create_line(coord1.x, coord1.y, coord2.x, coord2.y, fill='red', tags=tags)
+            canvas.create_line(coord1.x, coord1.y, coord2.x, coord2.y, fill='red', tags=tags, reference=self)
         # -------------------------------------------------
 
         # -------------Make bounding box--------------
@@ -88,7 +86,7 @@ class Outline:
 
         for coord1, coord2 in ((top_left, top_right), (top_right, bottom_right),
                                (bottom_right, bottom_left), (bottom_left, top_left)):
-            ln = canvas.create_line(coord1.x, coord1.y, coord2.x, coord2.y, tags=tags)
+            ln = canvas.create_line(coord1.x, coord1.y, coord2.x, coord2.y, tags=tags, reference=self)
             canvas.tag_bind(ln, '<Button-1>', self.on_translate_click)
         # ---------------------------------------------
 
@@ -97,7 +95,7 @@ class Outline:
                       rotated)
         for location, coords in corners:
             circ_coords = coords.x - 5, coords.y - 5, coords.x + 5, coords.y + 5
-            resizer = canvas.create_oval(circ_coords, fill='blue', tags=tags)
+            resizer = canvas.create_oval(circ_coords, fill='blue', tags=tags, reference=self)
             canvas.tag_bind(resizer, '<Button-1>',
                             lambda event, loc=location: self.on_resize_click(event, loc))
         # -----------------------------------------------------------
@@ -106,9 +104,9 @@ class Outline:
         start_point = top_left.midpoint(top_right)
         end_point = start_point + Point(np.sin(np.deg2rad(self.rotation)), -np.cos(np.deg2rad(self.rotation))) * 25
 
-        canvas.create_line(start_point.x, start_point.y, end_point.x, end_point.y, tags=tags)
+        canvas.create_line(start_point.x, start_point.y, end_point.x, end_point.y, tags=tags, reference=self)
         rotator_coords = end_point.x - 7.5, end_point.y - 7.5, end_point.x + 7.5, end_point.y + 7.5
-        rotator = canvas.create_oval(rotator_coords, fill='green', tags=tags)
+        rotator = canvas.create_oval(rotator_coords, fill='green', tags=tags, reference=self)
         canvas.tag_bind(rotator, '<Button-1>', self.on_rotate_click)
         # ----------------------------------------------------------------
 
@@ -118,7 +116,8 @@ class Outline:
         mid3 = bottom_right_crop.midpoint(bottom_left_crop)
         mid4 = bottom_left_crop.midpoint(top_left_crop)
         for location, point in (Outline.LEFT, mid4), (Outline.TOP, mid1), (Outline.RIGHT, mid2), (Outline.BOTTOM, mid3):
-            _id = canvas.create_oval(point.x-3, point.y-3, point.x+3, point.y+3, fill='red', tags=tags)
+            _id = canvas.create_oval(point.x-3, point.y-3, point.x+3, point.y+3, fill='red', tags=tags,
+                                     reference=self)
             canvas.tag_bind(_id, '<Button-1>',
                             lambda event, loc=location: self.on_crop_click(event, loc))
         # ------------------------------------------------
@@ -180,7 +179,6 @@ class Outline:
 
         return -> None
         """
-        print('crop clicked', location)
         self.crop_clicked = location
 
     def on_left_release(self, event):
@@ -277,10 +275,8 @@ class Outline:
 
         return -> None
         """
-        old_id = self.image.destroy(canvas)
-        new_id = self.image.draw(canvas)
-        del self.id_map[old_id]
-        self.id_map[new_id] = self.image
+        self.image.destroy(canvas)
+        self.image.draw(canvas)
         self.destroy(canvas)
         self.draw(canvas)
 
@@ -297,7 +293,7 @@ class Outline:
         """
         center = self.get_center().as_tuple()
         x, y = self.top_left.x, self.top_left.y
-        event_x, event_y = rt.rotation(event.x, event.y, center, -self.rotation)
+        event_x, event_y = rt.rotation(canvas.canvasx(event.x), canvas.canvasy(event.y), center, -self.rotation)
         width, height = self.get_width(), self.get_height()
 
         if self.resize_clicked == Outline.TOP_LEFT:
@@ -347,10 +343,8 @@ class Outline:
         self.image.width = int(self.get_width())
         self.image.height = int(self.get_height())
 
-        _old = self.image.destroy(canvas)
-        _new = self.image.draw(canvas)
-        del self.id_map[_old]
-        self.id_map[_new] = self.image
+        self.image.destroy(canvas)
+        self.image.draw(canvas)
         self.destroy(canvas)
         self.draw(canvas)
 
@@ -400,42 +394,30 @@ class Outline:
                                        center, -self.rotation)
         width, height = self.get_width(), self.get_height()
         if self.crop_clicked == Outline.TOP:
-            if event_y < y:
-                amount = 0
-            elif event_y > (y + height):
-                amount = height
-            else:
-                amount = event_y - y
+            min_ = y
+            max_ = y + height - self.image.crop_bottom * (height / 255)
+            amount = bound(min_, event_y, max_) - min_
             amount *= (255 / height)
             self.image.crop_top = int(amount)
 
         elif self.crop_clicked == Outline.RIGHT:
-            if event_x > self.top_right.x:
-                amount = 0
-            elif event_x < self.top_left.x:
-                amount = width
-            else:
-                amount = width - (event_x - x)
+            min_ = x + self.image.crop_left * (width / 255)
+            max_ = x + self.width
+            amount = max_ - bound(min_, event_x, max_)
             amount *= (255 / width)
             self.image.crop_right = int(amount)
 
         elif self.crop_clicked == Outline.BOTTOM:
-            if event_y < y:
-                amount = height
-            elif event_y > y + height:
-                amount = 0
-            else:
-                amount = height - (event_y - y)
+            min_ = y + self.image.crop_top * (height / 255)
+            max_ = y + self.height
+            amount = max_ - bound(min_, event_y, max_)
             amount *= (255 / height)
             self.image.crop_bottom = int(amount)
 
         elif self.crop_clicked == Outline.LEFT:
-            if event_x < x:
-                amount = 0
-            elif event_x > x + width:
-                amount = width
-            else:
-                amount = event_x - x
+            min_ = x
+            max_ = x + width - self.image.crop_right * (width / 255)
+            amount = bound(min_, event_x, max_) - min_
             amount *= (255 / width)
             self.image.crop_left = int(amount)
 
@@ -462,4 +444,5 @@ class Outline:
         self.bottom_right += (dx, dy)
 
     def destroy(self, canvas):
-        canvas.delete('outline-{}'.format(self.id))
+        canvas.delete(self)
+

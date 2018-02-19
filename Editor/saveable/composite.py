@@ -55,12 +55,13 @@ class Composite(SaveableType, metaclass=CompositeMeta):
         Creates an instance attribute for each type in the class attribute '__ordered__'.
         """
         SaveableType.__init__(self)
-        self.__dict__['signal_changed'] = Signal()
-        for key in self.__ordered__:
-            item = type(self).__dict__[key]()
-            self.__dict__[key] = item
+        self.signal_changed = Signal()
+        self.__typemap__ = {key: type(self).__dict__[key] for key in self.__ordered__}
+        for key, Type in self.__typemap__.items():
+            item = Type()
             if callable(getattr(item, 'signal_changed', None)):
                 item.signal_changed.connect(self.signal_changed)
+            self.__dict__[key] = item
 
     def __setattr__(self, key, value):
         """

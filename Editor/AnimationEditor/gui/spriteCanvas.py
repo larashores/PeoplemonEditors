@@ -41,7 +41,7 @@ class SpriteSheetCanvas(tk.Canvas):
         self.grid = Grid(self.scale)
         x, y = self.sheet.size
         self.size = (x*self.scale, y*self.scale)
-        new_sheet = self.sheet.resize(self.size)
+        new_sheet = self.sheet.resize((int(self.size[0]), int(self.size[1])))
         self.sheetTk = ImageTk.PhotoImage(new_sheet)
 
         self.config(width=self.size[0], height=self.size[1])
@@ -141,6 +141,8 @@ class SpriteSheetCanvas(tk.Canvas):
         Purpose: Changes the active frame, updates rectangle, and updates
                  sidebar
         """
+        if len(self.recs) == 0:
+            return
         for recs in self.recs:                          # Set all rectangles to black
             self.itemconfig(recs[0], outline='black')
         rec = self.recs[self.vars['active_frame'].get()-1][0]

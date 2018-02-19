@@ -73,23 +73,32 @@ class Frame(Component):
     def fromByteArray(self, byteArray):
         frame = Frame()
         frame.paramDict['length'] = structreader.unpack(byteArray, 'u32')
+        structreader.unpack(byteArray, 'u16')
         frame.paramDict['x'] = structreader.unpack(byteArray, 'u32')
         frame.paramDict['y'] = structreader.unpack(byteArray, 'u32')
         frame.paramDict['width'] = structreader.unpack(byteArray, 'u32')
         frame.paramDict['height'] = structreader.unpack(byteArray, 'u32')
+        structreader.unpack(byteArray, 'u32')
+        structreader.unpack(byteArray, 'u32')
         frame.paramDict['render_x'] = structreader.unpack(byteArray, 's32')
         frame.paramDict['render_y'] = structreader.unpack(byteArray, 's32')
         frame.paramDict['rotation'] = structreader.unpack(byteArray, 'u32')
+        structreader.unpack(byteArray, 'u8')
+
         return frame
 
     def toByteArray(self):
         data = bytearray()
         structreader.pack(data, self.paramDict['length'], 'u32')
+        structreader.pack(data, 1, 'u16')
         structreader.pack(data, self.paramDict['x'], 'u32')
         structreader.pack(data, self.paramDict['y'], 'u32')
         structreader.pack(data, self.paramDict['width'], 'u32')
         structreader.pack(data, self.paramDict['height'], 'u32')
+        structreader.pack(data, 100, 'u32')
+        structreader.pack(data, 100, 'u32')
         structreader.pack(data, self.paramDict['render_x'], 's32')
         structreader.pack(data, self.paramDict['render_y'], 's32')
         structreader.pack(data, self.paramDict['rotation'], 'u32')
+        structreader.pack(data, 255, 'u8')
         return data

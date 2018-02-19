@@ -1,11 +1,10 @@
-__author__ = 'Vincent'
-
 import tkinter as tk
 import tkinter.ttk as ttk
 from PIL import ImageTk
 from Editor.AnimationEditor.rotatedrec import rotatedRectangle
 from Editor.AnimationEditor.gui.changeScale import askChange
 import os
+
 
 class EditorMenu(tk.Menu):
     def __init__(self, frameViewer):
@@ -22,6 +21,7 @@ class EditorMenu(tk.Menu):
             if self.viewer.loaded:
                 self.viewer.apply()
 
+
 class FrameWindow(tk.Toplevel):
     def __init__(self, parent, controller):
         """
@@ -36,10 +36,11 @@ class FrameWindow(tk.Toplevel):
         viewer.pack(padx=(5, 5), pady=(0, 5))
 
         self.config(menu=EditorMenu(viewer.canvas))
-        self.iconbitmap(os.path.join('icons\\editor.ico'))
+        self.iconbitmap(os.path.join('resources\\editor.ico'))
+
 
 class FrameViewer(ttk.Frame):
-    def __init__(self,parent,controller):
+    def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
         self.controller = controller
         style = ttk.Style()

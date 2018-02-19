@@ -1,24 +1,21 @@
-
-
 from Editor.utilities.location_saver import save_location, load_locations, load_location
+from Editor.signal import Signal
 
 import os
 import tkinter as tk
-from tkinter.messagebox import showinfo, showerror, askokcancel
+from tkinter.messagebox import showinfo, showerror, askokcancel, showwarning
 from tkinter.simpledialog import askinteger
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 LOCATION_SAVE = 'move_animation_editor_save_path'
 LOCATION_LOAD = 'move_animation_editor_load_path'
 LOCATIONS_EXPORT = 'move_animation_editor_export_path_anim', 'move_animation_editor_export_path_texture'
+LOCATION_ADD_IMAGE = 'move_animation_editor_load_image'
 
 
 class EditorMenu(tk.Menu):
     def __init__(self, controller):
         tk.Menu.__init__(self)
-        self.last_save_path = load_location(LOCATION_SAVE)
-        self.last_load_path = load_location(LOCATION_LOAD)
-        self.last_export_paths = load_locations(LOCATIONS_EXPORT)
         self.controller = controller
         file = tk.Menu(self, tearoff=0)
         file.add_command(label='New', command=self.new)
@@ -33,11 +30,21 @@ class EditorMenu(tk.Menu):
         self.add_cascade(label='Edit', menu=edit)
 
         animation = tk.Menu(self, tearoff=0)
-        animation.add_command(label='Add Image', command=self.controller.add_image)
+        animation.add_command(label='Add Image', command=self._add_image)
         animation.add_command(label='Add Frame', command=self.controller.add_frame)
         animation.add_command(label='Insert Frame', command=self.controller.insert_frame)
         animation.add_command(label='Delete Frame', command=self.controller.delete_frame)
         self.add_cascade(label='Animation', menu=animation)
+
+    def _add_image(self):
+        path = askopenfilename(title='Load from?', initialdir=load_location(LOCATION_ADD_IMAGE))
+        if path:
+            name = os.path.split(path)[-1]
+            if any(img.name == name for img in self.controller.animation.images):
+                showwarning('Warning', 'Image with name "{}" has already been added'.format(name))
+                return
+            self.controller.add_image(path)
+            save_location({LOCATION_ADD_IMAGE: os.path.split(path)[0]})
 
     def change_all(self):
         length = askinteger(title='Change Length', prompt="Choose a Length")
