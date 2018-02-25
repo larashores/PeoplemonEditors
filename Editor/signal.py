@@ -4,11 +4,11 @@ class Signal:
         self.debug = False
 
     def __call__(self, *args, **kwargs):
-        for func in self.connections:
-            try:
+        try:
+            for func in self.connections:
                 func(*args, **kwargs)
-            except Exception as e:
-                raise ValueError('{}: {}'.format(func, e))
+        except:
+            raise AssertionError()
 
     def connect(self, func):
         if func not in self.connections:

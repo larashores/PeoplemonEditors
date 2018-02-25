@@ -8,6 +8,24 @@ from Editor.saveable.saveable import SaveableType
 from Editor.signal import Signal
 
 
+class SaveableViewer:
+    def __init__(self, parent):
+        self.parent = parent
+
+    def __getattribute__(self, item):
+        """
+        Catches all attribute getting. If the attribute defines a 'get' method returns that instead, otherwise just
+        returns the attribute
+        """
+        get_attr_self = lambda item: object.__getattribute__(self, item)
+        get_attribute = lambda item: SaveableType.__getattribute__(get_attr_self('parent'), item)
+        _dict = get_attribute('__dict__')
+        if item not in type(get_attr_self('parent')).__ordered__:
+            raise ValueError('Saveable ' + item + " does not exist")
+        saveable_type = _dict[item]
+        return saveable_type
+
+
 class CompositeMeta(ABCMeta):
     """
     Meta class that keeps track of an ordered list of class attributes to later be used by the Composite class.
@@ -50,11 +68,13 @@ class Composite(SaveableType, metaclass=CompositeMeta):
 
 
     """
+
     def __init__(self):
         """
         Creates an instance attribute for each type in the class attribute '__ordered__'.
         """
         SaveableType.__init__(self)
+        self.saveables = SaveableViewer(self)
         self.signal_changed = Signal()
         self.__typemap__ = {key: type(self).__dict__[key] for key in self.__ordered__}
         for key, Type in self.__typemap__.items():
@@ -87,7 +107,7 @@ class Composite(SaveableType, metaclass=CompositeMeta):
             return get_attribute(item)
         saveable_type = _dict[item]
         return saveable_type
-        #return saveable_type.get() if callable(getattr(saveable_type, 'get', None)) else saveable_type
+        # return saveable_type.get() if callable(getattr(saveable_type, 'get', None)) else saveable_type
 
     def load_in_place(self, byte_array):
         for key in self.__ordered__:
