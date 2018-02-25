@@ -46,7 +46,7 @@ class ListChoiceGUI(ttk.Frame):
     def update_selection(self, ind):
         self.lbox.selection_clear(0, tk.END)
         self.lbox.selection_set(ind)
-        self.lbox.activate(ind)
+        self.after(20, lambda: self.lbox.activate(ind))
 
     def update_selection_after(self, ind):
         self.update_idletasks()
@@ -165,6 +165,12 @@ class ListChoice:
         self._unsorted_to_sorted_index.clear()
         self._gui.lbox.delete(0, tk.END)
 
+    def state(self, *args, **kwargs):
+        self._gui.state(*args, **kwargs)
+
+    def itemconfig(self, *args, **kwargs):
+        self._gui.lbox.itemconfig(*args, **kwargs)
+
     def get_selection(self):
         return self._cur_selection
 
@@ -173,6 +179,7 @@ class ListChoice:
         self._cur_selection = ind
         self._gui.update_selection(self._unsorted_to_sorted_index[ind])
         self.signal_select(ind)
+        self.set_top(ind)
 
     def get_bottom(self):
         return self.get_top() + self._gui.lbox.winfo_height() / self.HEIGHT_PER_CELL
