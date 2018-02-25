@@ -75,10 +75,10 @@ class TrainerEditorGUI(ttk.Frame):
         self.item_id.pack(expand=tk.YES, fill=tk.X)
         self.add_item.pack(pady=(10, 0))
 
-        self.right_frm.pack(expand=tk.YES, fill=tk.BOTH, side=tk.LEFT)
+        self.right_frm.pack(fill=tk.BOTH, side=tk.LEFT)
         sep2.pack(fill=tk.Y, padx=(10, 0), side=tk.LEFT)
         motion_lbl.pack(padx=10)
-        self.behavior_widget.pack(expand=tk.YES, fil=tk.BOTH)
+        self.behavior_widget.pack(expand=tk.YES, fill=tk.BOTH)
 
         self.ai_type.state(['readonly'])
         self.motion_type.state(['readonly'])
@@ -106,6 +106,7 @@ class TrainerEditor:
         self.node_connector = None
         self.peoplemon_connector = ArrayConnector(self.trainer.peoplemon,
                                                   self.gui.peoplemon_list, self.gui.add_peoplemon, self.gui.file_name)
+        self.peoplemon_connector.bind_move()
         self.item_connector = ArrayConnector(self.trainer.items,
                                              self.gui.item_list, self.gui.add_item, self.gui.item_id)
         self.gui.peoplemon_list.signal_select.connect(self.select_peoplemon)
@@ -118,6 +119,11 @@ class TrainerEditor:
         self.gui.ai_type.config(textvariable=make_combo_var(self.trainer.ai_type, ai_map))
         self.gui.motion_type.config(textvariable=make_combo_var(self.trainer.behavior, behavior_map))
         self.behavior_connect = BehaviorWidgetConnector(self.gui.behavior_widget, self.trainer.behavior)
+        self.behavior_connect.signal_repack.connect(self.on_repack)
+
+    def on_repack(self, expand):
+        self.gui.right_frm.pack_forget()
+        self.gui.right_frm.pack(side=tk.LEFT, expand=expand, fill=tk.BOTH)
 
     def select_peoplemon(self, ind):
         if ind is not None:
@@ -131,50 +137,6 @@ class TrainerEditor:
 
     def pack(self, **kwargs):
         self.gui.pack(**kwargs)
-
-
-class Still(ttk.Label):
-    def __init__(self, parent=None):
-        ttk.Label.__init__(self, parent, text='No Options')
-
-
-class SpinInPlace(ttk.Frame):
-    def __init__(self, parent=None):
-        ttk.Frame.__init__(self, parent)
-        ttk.Label(self, text='Direction').pack()
-        self.combo = ttk.Combobox(self, justify=tk.CENTER, values=[D_CLOCK, D_COUNTER,  D_RANDOM])
-        self.combo.state(['readonly'])
-        self.combo.pack(expand=tk.YES, fill=tk.X)
-
-
-class WanderFreely(ttk.Frame):
-    def __init__(self, parent=None):
-        ttk.Frame.__init__(self, parent)
-        self.radius = EntryLabel(self, text='Wander Radius')
-        self.radius.pack(expand=tk.YES, fill=tk.X)
-        intValidate(self.radius.entry, 'u8')
-
-
-class FollowPath(ttk.Frame):
-    def __init__(self, parent=None):
-        ttk.Frame.__init__(self, parent)
-        self.nodes = []
-        self.check = ttk.Checkbutton(self, text='Reverse loop')
-        self.node_list = ListChoice(self)
-        lbl = ttk.Label(self, text='Direction')
-        self.direction = ttk.Combobox(self, justify=tk.CENTER, value=(D_UP, D_LEFT, D_RIGHT, D_DOWN))
-        self.steps = EntryLabel(self, text='Number of Steps')
-        self.add_button = ttk.Button(self, text='Add')
-
-        self.check.pack()
-        self.node_list.pack(expand=tk.YES, fill=tk.BOTH)
-        lbl.pack()
-        self.direction.pack(fill=tk.X)
-        self.steps.pack(fill=tk.X)
-        self.add_button.pack(pady=5)
-
-        self.direction.state(['readonly'])
-        intValidate(self.steps.entry, 'u8')
 
 
 if __name__ == '__main__':

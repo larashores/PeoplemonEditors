@@ -3,7 +3,7 @@ from Editor.utilities.simple_editor import run_simple_editor
 
 LOCATION = 'playlisteditorrr'
 TITLE = 'Playlist Editor'
-EXTENSION = 'playlist'
+EXTENSION = 'plst'
 FILE_TYPE = 'Playlist'
 
 if __name__ == '__main__':

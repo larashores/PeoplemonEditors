@@ -12,6 +12,10 @@ class Node(Composite):
     direction = saveable_int('u8')
     num_steps = saveable_int('u8')
 
+    def __str__(self):
+        node_to_string =  ['Up', 'Right', 'Down', 'Left']
+        return 'Direction: {}, Number of Steps: {}'.format(node_to_string[self.direction.get()], self.num_steps.get())
+
 
 class StandStillBehavior(Composite):
     pass

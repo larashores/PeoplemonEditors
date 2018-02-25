@@ -3,7 +3,7 @@ from WildPeoplemonEditor.editor import WildEditor
 
 LOCATION = 'wildpeoplemoneditor'
 TITLE = 'Wild Peoplmon Editor'
-EXTENSION = 'wild'
+EXTENSION = 'ppl'
 FILE_TYPE = 'Wilk Peoplemon'
 
 

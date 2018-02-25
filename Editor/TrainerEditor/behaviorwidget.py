@@ -15,6 +15,7 @@ class BehaviorWidgetConnector:
         self.gui = behavior_widget
         self.behavior = behavior_obj
         self.node_connector = None
+        self.signal_repack = Signal()
         self.behavior.signal_changed.connect(self.behavior_changed)
 
     def select_node(self, ind):
@@ -28,15 +29,19 @@ class BehaviorWidgetConnector:
     def behavior_changed(self, Type):
         widget_map = {StandStillBehavior: Still, SpinInPlaceBehavior: SpinInPlace,
                       FollowPathBehavior: FollowPath, WanderBehavior: WanderFreely}
+        if Type not in widget_map:
+            return
         self.gui.change_widget(widget_map[Type])
         current = self.gui.current_motion_widget
         if Type == StandStillBehavior:
-            pass
+            self.signal_repack(False)
         elif Type == WanderBehavior:
             current.radius.entry.config(textvariable=make_int_var(self.behavior.wander.radius))
+            self.signal_repack(False)
         elif Type == SpinInPlaceBehavior:
             dir_map = {D_CLOCK: 0, D_COUNTER: 1, D_RANDOM: 2}
             current.combo.config(textvariable=make_combo_var(self.behavior.spin.motion, dir_map))
+            self.signal_repack(False)
         elif Type == FollowPathBehavior:
             for node in self.behavior.follow.nodes:
                 current.node_list.clear()
@@ -49,7 +54,9 @@ class BehaviorWidgetConnector:
                                                  current.add_button,
                                                  current.direction,
                                                  current.steps)
+            self.node_connector.bind_move()
             current.node_list.signal_select.connect(self.select_node)
+            self.signal_repack(True)
 
 
 class BehaviorWidget(ttk.Frame):
@@ -68,7 +75,7 @@ class BehaviorWidget(ttk.Frame):
         elif isinstance(self.current_motion_widget, Still):
             self.current_motion_widget.pack()
         else:
-            self.current_motion_widget.pack(padx=10, fill=tk.X)
+            self.current_motion_widget.pack(padx=10)
 
 
 class Still(ttk.Label):

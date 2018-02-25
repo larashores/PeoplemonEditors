@@ -3,7 +3,7 @@ from Editor.utilities.simple_editor import run_simple_editor
 
 LOCATION = 'credits_editorrrr'
 TITLE = 'Credits Editor'
-EXTENSION = 'credit'
+EXTENSION = 'cr'
 FILE_TYPE = 'Credits'
 
 if __name__ == '__main__':

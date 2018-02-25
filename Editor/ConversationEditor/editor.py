@@ -50,7 +50,7 @@ class ConversationEditorGUI(ttk.Frame):
 
         left_frm.pack(side=tk.LEFT, expand=tk.YES, fill=tk.BOTH)
         title.pack()
-        self.button_grid.pack(expand=tk.YES)
+        self.button_grid.pack()
         line_label.pack()
         self.lines.pack(expand=tk.YES, fill=tk.BOTH)
         sep.pack(side=tk.LEFT, fill=tk.Y, padx=10)
@@ -78,6 +78,7 @@ class ConversationEditor:
         self.option_connector = None
         self.array_connector = ArrayConnector(self.conversations, self.gui.lines, None)
         self.add_connector = AddButtonConnector(self.conversations, self.gui.lines, self.gui.button_map)
+        self.array_connector.bind_move()
 
         self.add_connector.signal_about_to_add.connect(self.on_line_about_to_add)
         self.gui.lines.signal_select.connect(self.line_selected)
@@ -122,8 +123,12 @@ class ConversationEditor:
             self.option_connector.disconnect()
         self.option_connector = ArrayConnector(line.option.options, widget.options, widget.add_option,
                                                widget.option_display, widget.jump)
+        self.option_connector.bind_move()
         widget.options.signal_select.connect(self.option_selected)
+
     def option_selected(self, ind):
+        if ind is None:
+            return
         widget = self.gui.editor_widget.current_widget
         option = self.array_connector.cur_selection.option.options[ind]
         widget.option_display.entry.configure(textvariable=make_str_var(option.line))

@@ -20,7 +20,7 @@ class TrainerPeoplemonEditorGUI(ttk.Frame):
         middleFrm = ttk.Frame(second_row_frm)
         sep2 = ttk.Separator(second_row_frm, orient=tk.VERTICAL)
         rightFrm = ttk.Frame(second_row_frm)
-        moves_lbl_frm = ttk.Frame(leftFrm)
+        moves_frm = ttk.Frame(leftFrm)
 
         title = ttk.Label(self, text='Trainer Peoplemon Editor', style='Title.TLabel')
         grid1 = WidgetGrid(leftFrm, 2)
@@ -43,11 +43,11 @@ class TrainerPeoplemonEditorGUI(ttk.Frame):
                                      (self.hold, 'u16')):
             intValidate(entrylabel.entry, int_type)
 
-        move_lbl = ttk.Label(leftFrm, text='Moves', style='Subtitle.TLabel')
-        id_lbl = ttk.Label(moves_lbl_frm, text='IV')
-        pp_lbl = ttk.Label(moves_lbl_frm, text='PP')
+        move_lbl = ttk.Label(moves_frm, text='Moves', style='Subtitle.TLabel')
+        id_lbl = ttk.Label(moves_frm, text='IV')
+        pp_lbl = ttk.Label(moves_frm, text='PP')
         self.moves_widgets = []
-        grid2 = WidgetGrid(leftFrm, 2)
+        grid2 = WidgetGrid(moves_frm, 2)
         for _ in range(8):
             widget = grid2.add_widget(ttk.Entry, justify=tk.CENTER)
             intValidate(widget, 'u16')
@@ -65,10 +65,10 @@ class TrainerPeoplemonEditorGUI(ttk.Frame):
         grid1.pack(expand=tk.YES, fill=tk.X)
         sep3.pack(fill=tk.X, padx=(5, 5), pady=(10, 0))
         move_lbl.pack()
-        moves_lbl_frm.pack(fill=tk.X, padx=(3, 3))
+        moves_frm.pack(expand=tk.YES, fill=tk.X, padx=(3, 3))
+        grid2.pack(expand=tk.YES, fill=tk.X, side=tk.BOTTOM)
         id_lbl.pack(side=tk.LEFT, expand=tk.YES)
         pp_lbl.pack(side=tk.LEFT, expand=tk.YES)
-        grid2.pack(expand=tk.YES, fill=tk.X)
         sep1.pack(fill=tk.Y, pady=(5, 5), padx=10, side=tk.LEFT)
 
         middleFrm.pack(expand=tk.YES, fill=tk.BOTH, side=tk.LEFT)

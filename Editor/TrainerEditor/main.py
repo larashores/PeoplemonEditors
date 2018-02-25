@@ -3,7 +3,7 @@ from Editor.utilities.simple_editor import run_simple_editor
 
 LOCATION = 'trainereditorrrr'
 TITLE = 'Trainer Editor'
-EXTENSION = 'trainer'
+EXTENSION = 'tnr'
 FILE_TYPE = 'Trainer'
 
 if __name__ == '__main__':

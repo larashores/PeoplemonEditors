@@ -30,6 +30,7 @@ class PlaylistEditor:
         self.playlist = Playlist()
         self.main_saveable = self.playlist
         self.connector = ArrayConnector(self.playlist, self.gui.songs, self.gui.button, self.gui.name)
+        self.connector.bind_move()
         self.gui.songs.signal_select.connect(self.on_select)
 
     def on_select(self, ind):

@@ -97,6 +97,7 @@ class CreditsEditor:
         self.main_saveable = self.credits
 
         self.array_connector = ArrayConnector(self.credits, self.gui.list, None, self.gui.x_pos, self.gui.y_buf)
+        self.array_connector.bind_move()
         self.add_button_connector = AddButtonConnector(self.credits, self.gui.list,
                                                        {self.gui.add_text_button: TextType,
                                                         self.gui.add_image_button: ImageType})
@@ -141,7 +142,9 @@ class CreditsEditor:
         text_credit = self.array_connector.cur_selection.type.text
         r, g, b = text_credit.red.get(), text_credit.green.get(), text_credit.blue.get()
         self.gui.multi_widget.current_widget.change_color(r, g, b)
-        self.gui.list.itemconfig(self.gui.list.get_selection(), foreground=TextEditorGUI.rgb_to_hex(r, g, b))
+        selection = self.gui.list.get_selection()
+        if selection:
+            self.gui.list.itemconfig(selection, foreground=TextEditorGUI.rgb_to_hex(r, g, b))
 
     def on_credit_add(self, ind, val):
         if val.type.get() == TextType:
