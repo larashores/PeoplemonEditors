@@ -4,7 +4,7 @@ from tkinter import ttk
 from utilities.arrayconnector import ArrayConnector
 from Editor.utilities.make_var import make_int_var, make_str_var
 from Editor.guicomponents.entrylabel_ttk import EntryLabel
-from Editor.guicomponents.listchoice_2 import ListChoice
+from Editor.guicomponents.listchoice import ListChoice
 from Editor.guicomponents.integercheck import intValidate
 from WildPeoplemonEditor.saveables import WildPeoplemon
 
@@ -18,6 +18,7 @@ class WildEditorGUI(ttk.Frame):
         self.entry_max = EntryLabel(self, text='Maximum Level')
         self.entry_rarity = EntryLabel(self, text='Rarity (1-?)')
         sep = ttk.Separator(self, orient=tk.HORIZONTAL)
+        override_lbl = ttk.Label(self, text='Overrides', style='Subtitle.TLabel')
         self.string = EntryLabel(self, text='String Code')
         self.code = EntryLabel(self, text='Value')
         self.choices = ListChoice(self)
@@ -32,6 +33,7 @@ class WildEditorGUI(ttk.Frame):
         self.entry_max.pack(expand=tk.YES, fill=tk.X)
         self.entry_rarity.pack(expand=tk.YES, fill=tk.X)
         sep.pack(fill=tk.X, pady=(12, 0), padx=5)
+        override_lbl.pack()
         self.string.pack(expand=tk.YES, fill=tk.X)
         self.code.pack(expand=tk.YES, fill=tk.X)
         self.choices.pack(pady=(10, 5), expand=tk.YES, fill=tk.X)
@@ -52,6 +54,8 @@ class WildEditor:
         self.array_connector = ArrayConnector(self.peoplemon.overrides, self.gui.choices, self.gui.add,
                                               self.gui.code, self.gui.string)
         self.gui.choices.signal_select.connect(self.select_override)
+
+        self.gui.choices.set_key(lambda override: override.code.get())
 
     def select_override(self, ind):
         if ind is not None:

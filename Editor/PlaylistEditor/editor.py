@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from Editor.guicomponents.listchoice_2 import ListChoice
+from Editor.guicomponents.listchoice import ListChoice
 from Editor.guicomponents.entrylabel_ttk import EntryLabel
 from Editor.guicomponents.integercheck import intValidate
 from Editor.guicomponents.widgetgrid import WidgetGrid
@@ -16,7 +16,7 @@ class PlaylistEditorGUI(ttk.Frame):
         title = ttk.Label(self, text='Playlist Editor', style='Title.TLabel')
         self.songs = ListChoice(self)
         self.name = EntryLabel(self, text='Song Name', width=50)
-        self.button = ttk.Button(self, text='Apply')
+        self.button = ttk.Button(self, text='Add')
 
         title.pack()
         self.songs.pack(expand=tk.YES, fill=tk.BOTH)

@@ -11,3 +11,7 @@ class Location(Composite):
     reference_name = SaveableString
     map_name = SaveableString
     spawn_id = saveable_int('u16')
+
+    def __str__(self):
+        return 'Spawn ID: {}, Display Name: {}, Reference Name: {}, Map Name: {}'.  \
+              format(self.spawn_id.get(), self.display_name.get(), self.reference_name.get(), self.map_name.get())

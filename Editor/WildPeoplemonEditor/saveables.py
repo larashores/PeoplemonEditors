@@ -8,6 +8,9 @@ class Override(Composite):
     code = SaveableString
     override = saveable_int('u16')
 
+    def __str__(self):
+        return 'Code: {}, Value: {}'.format(self.code.get(), self.override.get())
+
 
 class WildPeoplemon(Composite):
     id = saveable_int('u16')

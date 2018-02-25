@@ -15,4 +15,4 @@ class EditorModel(Observable):
     @current_frame.setter
     def current_frame(self, val):
         self._current_frame = int(val)
-        self.signal_frame_changed.emit(self._current_frame)
+        self.signal_frame_changed(self._current_frame)

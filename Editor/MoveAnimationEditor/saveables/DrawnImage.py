@@ -33,14 +33,14 @@ class DrawnImage(Composite):
         if image:
             self.set_image(image)
             self.scale_original()
-        self.register(self.item_changed)
+        self.signal_changed.connect(self.item_changed)
 
         self.half_transparent = None
         self.half_transparent_tk = None
         self.update_half_transparent = True
         self.level = None
 
-    def item_changed(self, key):
+    def item_changed(self, key, *args):
         if key != 'x' and key != 'y':
             self.changed = True
             self.update_half_transparent = True

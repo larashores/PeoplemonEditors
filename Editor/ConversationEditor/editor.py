@@ -5,7 +5,7 @@ from Editor.ConversationEditor.edit_widgets import *
 from Editor.ConversationEditor.saveables import *
 from Editor.guicomponents.widgetgrid import WidgetGrid
 from Editor.guicomponents.multiwidget import MultiWidget
-from Editor.guicomponents.listchoice_2 import ListChoice
+from Editor.guicomponents.listchoice import ListChoice
 from Editor.utilities.addbuttonconnector import AddButtonConnector
 from Editor.utilities.arrayconnector import ArrayConnector
 from Editor.utilities.make_var import make_str_var, make_int_var

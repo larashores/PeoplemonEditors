@@ -2,7 +2,7 @@ from Editor.PeoplemonDatabase.editor import PeoplemonEditor
 from Editor.utilities.simple_editor import run_simple_editor
 
 LOCATION = 'peoplemon_editoror'
-TITLE = 'Peoplemon Editor'
+TITLE = 'Peoplemon Database Editor'
 EXTENSION = 'db'
 FILE_TYPE = 'Peoplemon'
 

@@ -73,18 +73,18 @@ class TrainerPeoplemonEditorGUI(ttk.Frame):
 
         middleFrm.pack(expand=tk.YES, fill=tk.BOTH, side=tk.LEFT)
         iv_title.pack()
-        grid3.pack(expand=tk.YES, fill=tk.X)
+        grid3.pack(fill=tk.X)
         sep2.pack(fill=tk.Y, pady=(5, 5), padx=10, side=tk.LEFT)
 
         rightFrm.pack(expand=tk.YES, fill=tk.BOTH, side=tk.LEFT)
         ev_title.pack()
-        grid4.pack(expand=tk.YES, fill=tk.X)
+        grid4.pack(fill=tk.X)
 
     def make_base_stats_widget(self, parent=None):
         grid = WidgetGrid(parent, 2)
         widgets = []
         for text in self.STATS:
-            widget = grid.add_widget(EntryLabel, text=text)
+            widget = grid.add_widget(EntryLabel, text=text, expand=tk.YES)
             intValidate(widget.entry, 'u16')
             widgets.append(widget)
         return widgets, grid

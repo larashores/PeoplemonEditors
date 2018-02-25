@@ -4,7 +4,7 @@ from tkinter.colorchooser import askcolor
 
 from Editor.CreditsEditor.saveables import *
 from Editor.guicomponents.entrylabel_ttk import EntryLabel
-from Editor.guicomponents.listchoice_2 import ListChoice
+from Editor.guicomponents.listchoice import ListChoice
 from Editor.guicomponents.integercheck import intValidate
 from Editor.guicomponents.multiwidget import MultiWidget
 from Editor.utilities.arrayconnector import ArrayConnector

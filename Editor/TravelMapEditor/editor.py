@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from Editor.guicomponents.listchoice_2 import ListChoice
+from Editor.guicomponents.listchoice import ListChoice
 from Editor.guicomponents.entrylabel_ttk import EntryLabel
 from Editor.guicomponents.integercheck import intValidate
 from Editor.utilities.arrayconnector import ArrayConnector
@@ -33,9 +33,9 @@ class TravelEditorGUI(ttk.Frame):
         self.maps.pack(expand=tk.YES, fill=tk.BOTH)
         self.add_button.pack(pady=10)
         sep.pack(fill=tk.X, padx=10)
-        top.pack(expand=tk.YES, fill=tk.BOTH)
-        mid.pack(expand=tk.YES, fill=tk.BOTH)
-        bot.pack(expand=tk.YES, fill=tk.BOTH)
+        top.pack(fill=tk.BOTH)
+        mid.pack(fill=tk.BOTH)
+        bot.pack(fill=tk.BOTH)
         self.entry_x.pack(expand=tk.YES, fill=tk.X, side=tk.LEFT, padx=(0, 5))
         self.entry_y.pack(expand=tk.YES, fill=tk.X,  side=tk.LEFT, padx=(5, 0))
         self.entry_display.pack(expand=tk.YES, fill=tk.X,  side=tk.LEFT, padx=(0, 5))
@@ -60,6 +60,7 @@ class TravelEditor:
 
         self.array_connector = ArrayConnector(self.maps, self.gui.maps, self.gui.add_button, *self.gui.entries)
         self.gui.maps.signal_select.connect(self.select_override)
+        self.gui.maps.set_key(lambda map: map.spawn_id.get())
 
     def select_override(self, ind):
         if ind is not None:

@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from Editor.guicomponents.entrylabel_ttk import EntryLabel
-from Editor.guicomponents.listchoice_2 import ListChoice
+from Editor.guicomponents.listchoice import ListChoice
 from Editor.guicomponents.integercheck import intValidate
 from Editor.guicomponents.widgetgrid import WidgetGrid
 from Editor.utilities.make_var import make_str_var, make_int_var, make_combo_var, make_check_var
@@ -99,6 +99,7 @@ class TrainerEditor:
                          self.gui.playlist: self.trainer.playlist,
                          self.gui.background: self.trainer.background_image}
 
+        self.gui.item_list.set_key(lambda item: item.get())
         for widget, saveable in str_entry_map.items():
             widget.entry.config(textvariable=make_str_var(saveable))
         self.gui.sight_range.entry.config(textvariable=make_int_var(self.trainer.sight_range))

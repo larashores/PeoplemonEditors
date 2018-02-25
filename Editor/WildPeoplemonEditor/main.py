@@ -1,5 +1,5 @@
 from Editor.utilities.simple_editor import run_simple_editor
-from WildPeoplemonEditor.wildeditor import WildEditor
+from WildPeoplemonEditor.editor import WildEditor
 
 LOCATION = 'wildpeoplemoneditor'
 TITLE = 'Wild Peoplmon Editor'

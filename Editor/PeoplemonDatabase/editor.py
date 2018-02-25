@@ -3,17 +3,51 @@ from tkinter import ttk
 
 from Editor.utilities.make_var import make_str_var, make_int_var, make_combo_var, make_check_var
 from Editor.utilities.arrayconnector import ArrayConnector
+from Editor.utilities.sortconnector import SortConnector
 from Editor.guicomponents.integercheck import intValidate
-from Editor.guicomponents.listchoice_2 import ListChoice
+from Editor.guicomponents.listchoice import ListChoice
 from Editor.guicomponents.entrylabel_ttk import EntryLabel
 from Editor.guicomponents.combolabel import ComboLabel
 from Editor.guicomponents.widgetgrid import WidgetGrid
 from Editor.guicomponents.variabletext import VariableText
+from Editor.guicomponents.sortbox import SortBox
 from Editor.PeoplemonDatabase.saveables import *
 from Editor.saveable.saveableArray import array
 
+import collections
+
 XP_MAP = {'Slow': 0, 'Regular': 1, 'Fast': 2}
 
+SORT_MAP = collections.OrderedDict()
+
+for string, func in (('Peoplemon ID', lambda p: p.id.get()),
+                     ('Name', lambda p: p.name.get()),
+                     ('Type', lambda p: p.type.get()),
+                     ('Base XP Yield', lambda p: p.base_xp_yield.get()),
+                     ('XP Group', lambda p: p.xp_group.get()),
+                     ('Evolve Level', lambda p: p.evolve_level.get()),
+                     ('Number of Learned Moves', lambda p: len(p.learn_moves)),
+                     ('Number of Available Moves', lambda p: len(p.valid_moves)),
+                     ('Attack', lambda p: p.base_stats.attack.get()),
+                     ('Defense', lambda p: p.base_stats.defense.get()),
+                     ('Sp. Attack', lambda p: p.base_stats.special_attack.get()),
+                     ('Sp. Defense', lambda p: p.base_stats.special_defense.get()),
+                     ('HP', lambda p: p.base_stats.hp.get()),
+                     ('Speed', lambda p: p.base_stats.speed.get()),
+                     ('Accuracy', lambda p: p.base_stats.accuracy.get()),
+                     ('Evade', lambda p: p.base_stats.evade.get()),
+                     ('Critical', lambda p: p.base_stats.critical.get()),
+                     ('EV Attack Award', lambda p: p.ev_stats.attack.get()),
+                     ('EV Defense Award', lambda p: p.ev_stats.defense.get()),
+                     ('EV Sp. Attack Award', lambda p: p.ev_stats.special_attack.get()),
+                     ('EV Sp. Defense Award', lambda p: p.ev_stats.special_defense.get()),
+                     ('EV HP Award', lambda p: p.ev_stats.hp.get()),
+                     ('EV Speed Award', lambda p: p.ev_stats.speed.get()),
+                     ('EV Accuracy Award', lambda p: p.ev_stats.accuracy.get()),
+                     ('EV Evade Award', lambda p: p.ev_stats.evade.get()),
+                     ('EV Critical Award', lambda p: p.ev_stats.critical.get())):
+    SORT_MAP[string] = func
+print(SORT_MAP)
 
 class StatsGUI(ttk.Frame):
     def __init__(self, parent=None, title='Stats'):
@@ -49,6 +83,7 @@ class PeoplemonEditorGUI(ttk.Frame):
 
         lft_frm = ttk.Frame(self)
         title = ttk.Label(lft_frm, text='Move Database Editor', style='Title.TLabel')
+        self.sort = SortBox(lft_frm)
         self.items = ListChoice(lft_frm, width=50, height=12)
         self.add_button = ttk.Button(lft_frm, text='Add')
         sep6 = ttk.Separator(lft_frm)
@@ -91,6 +126,7 @@ class PeoplemonEditorGUI(ttk.Frame):
 
         lft_frm.pack(side=tk.LEFT, expand=tk.YES, fill=tk.BOTH)
         title.pack()
+        self.sort.pack(fill=tk.X, pady=5)
         self.items.pack(expand=tk.YES, fill=tk.BOTH)
         self.add_button.pack()
         sep6.pack(fill=tk.X, padx=10, pady=10)
@@ -147,6 +183,9 @@ class PeoplemonEditor:
                                              gui.learn_level, gui.available_list, gui.available_move_id,
                                              gui.add_available_button, gui.add_learn_move)
         self.gui.items.signal_select.connect(self.on_select)
+        self.sort_connector = SortConnector(gui.items, gui.sort.combo, SORT_MAP)
+        gui.learn_list.set_key(lambda learn: learn.learn_level.get())
+        gui.available_list.set_key(lambda move: move.get())
 
     def on_select(self, id):
         peoplemon = self.item_connector.cur_selection
@@ -176,15 +215,18 @@ class PeoplemonEditor:
         self.gui.available_list.signal_select.connect(self.on_available_move_select)
 
     def on_learn_move_select(self, ind):
+        if ind is None:
+            return
         learn_move = self.item_connector.cur_selection.learn_moves[ind]
         for widget, saveable in ((self.gui.learn_move_id, learn_move.move_id),
                                  (self.gui.learn_level, learn_move.learn_level)):
-            widget.entry.config(textvariable=make_str_var(saveable))
+            widget.entry.config(textvariable=make_int_var(saveable))
 
     def on_available_move_select(self, ind):
+        if ind is None:
+            return
         move = self.item_connector.cur_selection.valid_moves[ind]
-        print(ind, move)
-        self.gui.available_move_id.entry.config(textvariable=make_str_var(move))
+        self.gui.available_move_id.entry.config(textvariable=make_int_var(move))
 
     def pack(self, **kwargs):
         self.gui.pack(**kwargs)

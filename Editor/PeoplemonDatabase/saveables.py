@@ -29,7 +29,7 @@ class LearnMove(Composite):
     move_id = U16
 
     def __str__(self):
-        return 'ID: {}, Learn Level: {}'.format(self.move_id.get(), self.learn_level.get())
+        return 'Learn Level: {}, ID: {}'.format(self.learn_level.get(), self.move_id.get())
 
 
 class Peoplemon(Composite):
