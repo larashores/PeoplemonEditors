@@ -1,138 +1,255 @@
-'''
-#-------------------------------------------------------------------------------
-# Name:        listchoice.py
+import tkinter as tk
+from tkinter import ttk
 
-# Author:      Vincent
-#
-# Date Created:     01/15/2015
-# Date Modified:    01/15/2015
-#-------------------------------------------------------------------------------
-
-Purpose:
-
-'''
-
-import inspect
-
-from tkinter import *
+import bisect
 
 
-class ListChoiceGUI(Frame):
-    '''
-    Purpose:    Scrolling Listbox where entries can be added and deleted
-    Attributes:
-        parent:     Parent widget
-        choicelist: The list where choice strings are stored
-        indexvar:   IntVar where the selected index is stored
-    '''
-    def __init__(self,parent,controller,click_cmd,delete_cmd,up_cmd,down_cmd,**kwargs):
-        Frame.__init__(self,parent)
-        self.controller = controller
-        self.click_cmd = click_cmd
-        self.delete_cmd = delete_cmd
-        self.up_cmd = up_cmd
-        self.down_cmd = down_cmd
-        self.MakeWidgets(kwargs)
-        self.lbox.bind('<Delete>', (lambda event: self.delete()) )
-        self.lbox.bind('<Button-1>', (lambda event: self.click()) )
-        self.lbox.bind('<Up>',(lambda event: self.up()) )
-        self.lbox.bind('<Down>',(lambda event: self.down()) )
-    def MakeWidgets(self,kwargs):
-        frm = Frame(self)
-        sbar = Scrollbar(frm)
-        lbox = Listbox(frm, **kwargs)
-        frm.pack(expand=YES, fill=X)
-        sbar.config(command=lbox.yview)
-        lbox.config(yscrollcommand=sbar.set)
-        lbox.config(selectmode=SINGLE)
+from Editor.signal import Signal
 
-        hsbar = Scrollbar(self,orient=HORIZONTAL)
-        hsbar.config(command=lbox.xview)
-        lbox.config(xscrollcommand=hsbar.set)
 
-        sbar.pack(side=RIGHT,fill=Y)
-        hsbar.pack(side=TOP,fill=X)
-        lbox.pack(side=LEFT,expand=YES,fill=X)
-        self.lbox = lbox
-        self.sbar = sbar
-        self.hsbar = hsbar
-    def delete(self):
-        self.delete_cmd()
-    def click(self):
-        self.after(20,self._click)
+class ListChoiceGUI(ttk.Frame):
+    def __init__(self, parent=None, **kwargs):
+        ttk.Frame.__init__(self, parent)
+        self.signal_delete = Signal()
+        self.signal_up = Signal()
+        self.signal_down = Signal()
+        self.signal_select = Signal()
+
+        frm = ttk.Frame(self)
+        self.lbox = tk.Listbox(frm, selectmode=tk.SINGLE, **kwargs)
+        self.sbar = ttk.Scrollbar(frm)
+        self.hsbar = ttk.Scrollbar(self, orient=tk.HORIZONTAL)
+
+        self.hsbar.config(command=self.lbox.xview)
+        self.sbar.config(command=self.lbox.yview)
+        self.lbox.config(xscrollcommand=self.hsbar.set)
+        self.lbox.config(yscrollcommand=self.sbar.set)
+        self.lbox.config(selectmode=tk.SINGLE)
+
+        self.sbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.hsbar.pack(side=tk.BOTTOM, fill=tk.X)
+        self.lbox.pack(side=tk.LEFT, expand=tk.YES, fill=tk.BOTH)
+        frm.pack(expand=tk.YES, fill=tk.BOTH)
+
+        self.lbox.bind('<Delete>', lambda event: self.signal_delete() if self.lbox.size() >= 1 else None)
+        self.lbox.bind('<Button-1>', lambda event: self.after(20, self._click))
+        self.lbox.bind('<Up>', lambda event: self.signal_up())
+        self.lbox.bind('<Down>', lambda event: self.signal_down())
+
     def _click(self):
         val = self.lbox.curselection()
-        if len(val) != 1:
-            self.click_cmd(-1)
+        if len(val) == 1:
+            self.signal_select(val[0])
         else:
-            self.click_cmd(int(val[0]))
+            self.signal_select(None)
 
-    def up(self):
-        self.after(20,lambda: self.up_cmd())
-    def down(self):
-        self.after(20,lambda: self.down_cmd())
+    def update_selection(self, ind):
+        self.lbox.selection_clear(0, tk.END)
+        self.lbox.selection_set(ind)
+        self.lbox.activate(ind)
 
-class ListChoice():
-    def __init__(self,parent=None,*,
-                 click_cmd=lambda x: None,
-                 delete_cmd=lambda x: None,
-                 up_cmd=lambda x: None,
-                 down_cmd=lambda x: None,**kwargs):
-        self.model = ListChoiceModel()
-        self.gui = ListChoiceGUI(parent,self,click_cmd,delete_cmd,up_cmd,down_cmd,**kwargs)
-    def __iter__(self):
-        for choice in self.model:
-            yield choice
-    def __getitem__(self,index):
-        return self.model.choices[index]
+    def update_selection_after(self, ind):
+        self.update_idletasks()
+        self.update()
+        self.after(20, lambda: self.update_selection(ind))
+
+
+class KeyWrapper:
+    def __init__(self, iterable, key_func = None):
+        self._it = iterable
+        self.key_func = key_func
+
+    def __getitem__(self, i):
+        return self.key_func(self._it[i])
+
     def __len__(self):
-        return len(self.model.choices)
-    def pack(self,**kwargs):
-        self.gui.pack(**kwargs)
-    def index(self,ind):
-        return self.model.choices.index(ind)
-    def addChoice(self,string):
-        self.model.addChoice(string)
-        self.update()
+        return len(self._it)
 
-    def setPosition(self,fraction):
-        self.gui.lbox.yview_moveto(fraction)
-    def getPosition(self):
-        return self.gui.lbox.yview()[0]
-    def delete(self,ind):
-        self.model.delete(int(ind))
-        self.update()
+
+class ListChoice:
+    def __init__(self, parent=None, **kwargs):
+        self.signal_select = Signal()
+        self.signal_delete = Signal()
+
+        self._cur_selection = None
+        self._unsorted_to_sorted_index = []
+        self._sorted_to_unsorted_index = []
+        self._data = []
+        self._sorted_data = []
+        self._wrapper = KeyWrapper(self._sorted_data)
+        self._gui = ListChoiceGUI(parent, **kwargs)
+
+        self._gui.signal_select.connect(self._on_select)
+        self._gui.signal_up.connect(self._up)
+        self._gui.signal_down.connect(self._down)
+
+    def __len__(self):
+        return self._gui.lbox.size()
+
+    def set_key(self, key_func):
+        self._wrapper.key_func = key_func
+
+        old = self._data.copy()
+        self._clear()
+        for data in old:
+            self._append(data)
+
+        if self._cur_selection is not None:
+            self._gui.update_selection_after(self._unsorted_to_sorted_index[self._cur_selection])
+
+    def insert(self, ind, data):
+        self._insert(ind, data)
+        if self._cur_selection is not None:
+            self._gui.update_selection(self._unsorted_to_sorted_index[self._cur_selection])
+
+    def _insert(self, ind, data):
+        if self._wrapper.key_func:
+            sorted_index = bisect.bisect(self._wrapper, self._wrapper.key_func(data))
+        else:
+            sorted_index = ind
+        for i, val in enumerate(self._sorted_to_unsorted_index):
+            if val >= ind:
+                self._sorted_to_unsorted_index[i] += 1
+        for i, val in enumerate(self._unsorted_to_sorted_index):
+            if val >= sorted_index:
+                self._unsorted_to_sorted_index[i] += 1
+        self._unsorted_to_sorted_index.insert(ind, sorted_index)
+        self._sorted_to_unsorted_index.insert(sorted_index, ind)
+        self._data.insert(ind, data)
+        self._sorted_data.insert(sorted_index, data)
+        self._gui.lbox.insert(sorted_index, data)
+
+    def append(self, data):
+        self.insert(len(self._data), data)
+
+    def _append(self, data):
+        self._insert(len(self._data), data)
+
+    def pop(self, ind):
+        self._pop(ind)
+        if self._cur_selection == ind:
+            self._cur_selection = None
+            self.signal_select(None)
+
+    def _pop(self, ind):
+        sorted_ind = self._unsorted_to_sorted_index[ind]
+        for i, val in enumerate(self._unsorted_to_sorted_index):
+            if val > sorted_ind:
+                self._unsorted_to_sorted_index[i] -= 1
+        for i, val in enumerate(self._sorted_to_unsorted_index):
+            if val > ind:
+                self._sorted_to_unsorted_index[i] -= 1
+        self._unsorted_to_sorted_index.pop(ind)
+        self._sorted_to_unsorted_index.pop(sorted_ind)
+        self._data.pop(ind)
+        self._sorted_data.pop(sorted_ind)
+        self._gui.lbox.delete(sorted_ind)
+
     def clear(self):
-        self.model.choices.clear()
-        self.update()
-    def update(self):
-        self.gui.lbox.delete(0,END)
-        for choice in self.model:
-            self.gui.lbox.insert(END,choice)
-    def choices(self):
-        return list(self.model)
-    def getCurSelection(self):
-        return self.gui.lbox.curselection()[0]
-    def setSelection(self,ind):
-        self.gui.lbox.selection_clear(0)
-        self.gui.lbox.selection_set(ind)
+        self._clear()
+        self._cur_selection = None
+        self.signal_select(None)
 
-class ListChoiceModel():
-    def __init__(self):
-        self.choices = []
-    def __iter__(self):
-        for choice in self.choices:
-            yield choice
-    def addChoice(self,string):
-        self.choices.append(string)
-    def delete(self,ind):
-        self.choices.pop(ind)
+    def _clear(self):
+        self._data.clear()
+        self._sorted_data.clear()
+        self._sorted_to_unsorted_index.clear()
+        self._unsorted_to_sorted_index.clear()
+        self._gui.lbox.delete(0, tk.END)
+
+    def get_selection(self):
+        return self._cur_selection
+
+    def set_selection(self, ind):
+        ind %= len(self._data)
+        self._cur_selection = ind
+        self._gui.update_selection(self._unsorted_to_sorted_index[ind])
+        self.signal_select(ind)
+
+    def get_top(self):
+        return self._gui.lbox.yview()[0] * len(self._data)
+
+    def set_top(self, top=None):
+        if not self._data:
+            return
+        if top is None:
+            top = len(self._data) - 1
+        value = top / len(self._data)
+        self._gui.lbox.yview_moveto(value)
+
+    def update_line(self, ind, data):
+        top = self.get_top()
+        selection = self._cur_selection
+        self._pop(ind)
+        self._insert(ind, data)
+        if selection == ind:
+            self._cur_selection = selection
+            self._gui.update_selection(self._unsorted_to_sorted_index[ind])
+
+    def bind(self, *args, **kwargs):
+        self._gui.lbox.bind(*args, **kwargs)
+
+    def pack(self, **kwargs):
+        self._gui.pack(**kwargs)
+
+    def _on_select(self, ind):
+        if ind is None:
+            return None
+        self._cur_selection = self._sorted_to_unsorted_index[ind]
+        self.signal_select(self._cur_selection)
+
+    def _up(self):
+        if self._cur_selection is None:
+            return
+        sorted_ind = self._unsorted_to_sorted_index[self._cur_selection]
+        if sorted_ind > 0:
+            sorted_ind -= 1
+            self._cur_selection = self._sorted_to_unsorted_index[sorted_ind]
+            self._gui.update_selection(sorted_ind)
+            self.signal_select(self._cur_selection)
+
+    def _down(self):
+        if self._cur_selection is None:
+            return
+        sorted_ind = self._unsorted_to_sorted_index[self._cur_selection]
+        if sorted_ind < len(self._data) - 1:
+            sorted_ind += 1
+            self._cur_selection = self._sorted_to_unsorted_index[sorted_ind]
+            self._gui.update_selection(sorted_ind)
+            self.signal_select(self._cur_selection)
+
 
 if __name__ == '__main__':
-    root = Tk()
-    list1 = ListChoice()
-    list1.pack(expand=YES,fill=BOTH)
+    root = tk.Tk()
+    #              0      1      2       3        4       5       6      7     8     9      10
+    test_data = ['bab', 'zfs', 'haf', 'abbas', 'abfba', 'asg', 'brrafv', 'a', 'ah', 'adf', 'afd']
+    list1 = ListChoice(root)
+    list1.signal_select.connect(lambda ind: print(ind))
+    edit = ttk.Entry(root)
+    button = ttk.Button(root, text='Apply')
+    button.config(command=lambda: list1.update_line(list1.get_selection(), edit.get()))
 
-    for choice in ['1','poop','2','4asfd']:
-        list1.addChoice(choice)
-    mainloop()
+    chk_frm = ttk.Frame(root)
+    funcs = [('Real Position', None),
+             ('Alphabetical', lambda val: str(val)),
+             ('Length', lambda val: len(val))]
+    v = tk.IntVar()
+    for ind in range(len(funcs)):
+        string, func = funcs[ind]
+        chk = ttk.Radiobutton(chk_frm, variable=v, value=ind, text=string, command=lambda func=func: list1.set_key(func))
+        chk.pack(side=tk.LEFT)
+    chk_frm.pack()
+    list1.pack(expand=tk.YES, fill=tk.BOTH)
+    edit.pack()
+    button.pack()
+
+    def test(event):
+        selection = list1.get_selection()
+        if selection is not None:
+            list1.pop(selection)
+    for choice in test_data:
+        list1.append(choice)
+    list1.bind('<Delete>', test)
+    print(list1._unsorted_to_sorted_index)
+    print(list1._sorted_to_unsorted_index)
+    tk.mainloop()
