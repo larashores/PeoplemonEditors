@@ -67,6 +67,8 @@ class KeyWrapper:
 
 
 class ListChoice:
+    HEIGHT_PER_CELL = 21.4
+
     def __init__(self, parent=None, **kwargs):
         self.signal_select = Signal()
         self.signal_delete = Signal()
@@ -87,8 +89,11 @@ class ListChoice:
         return self._gui.lbox.size()
 
     def set_key(self, key_func):
-        self._wrapper.key_func = key_func
+        if self._cur_selection is not None:
+            selection_viewable = self.get_top() <= self._unsorted_to_sorted_index[self._cur_selection] <= self.get_bottom()
+            dif = self._unsorted_to_sorted_index[self._cur_selection] - self.get_top()
 
+        self._wrapper.key_func = key_func
         old = self._data.copy()
         self._clear()
         for data in old:
@@ -96,6 +101,9 @@ class ListChoice:
 
         if self._cur_selection is not None:
             self._gui.update_selection_after(self._unsorted_to_sorted_index[self._cur_selection])
+
+        if self._cur_selection is not None and selection_viewable:
+            self.set_top(self._unsorted_to_sorted_index[self._cur_selection] - dif)
 
     def insert(self, ind, data):
         self._insert(ind, data)
@@ -166,25 +174,30 @@ class ListChoice:
         self._gui.update_selection(self._unsorted_to_sorted_index[ind])
         self.signal_select(ind)
 
+    def get_bottom(self):
+        return self.get_top() + self._gui.lbox.winfo_height() / self.HEIGHT_PER_CELL
+
     def get_top(self):
         return self._gui.lbox.yview()[0] * len(self._data)
 
-    def set_top(self, top=None):
+    def set_top(self, top):
         if not self._data:
             return
-        if top is None:
-            top = len(self._data) - 1
         value = top / len(self._data)
         self._gui.lbox.yview_moveto(value)
 
     def update_line(self, ind, data):
-        top = self.get_top()
-        selection = self._cur_selection
+        if self._cur_selection is not None:
+            selection_viewable = self.get_top() <= self._unsorted_to_sorted_index[self._cur_selection] <= self.get_bottom()
+            dif = self._unsorted_to_sorted_index[self._cur_selection] - self.get_top()
+
         self._pop(ind)
         self._insert(ind, data)
-        if selection == ind:
-            self._cur_selection = selection
+        if self._cur_selection == ind:
             self._gui.update_selection(self._unsorted_to_sorted_index[ind])
+
+        if self._cur_selection is not None and selection_viewable:
+            self.set_top(self._unsorted_to_sorted_index[self._cur_selection] - dif)
 
     def bind(self, *args, **kwargs):
         self._gui.lbox.bind(*args, **kwargs)
