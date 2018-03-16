@@ -2,7 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 
 
-from Editor.guicomponents.entrylabel_ttk import EntryLabel
+from Editor.guicomponents.entrylabel import EntryLabel
 from Editor.guicomponents.listchoice import ListChoice
 
 from Editor.guicomponents.integercheck import intValidate

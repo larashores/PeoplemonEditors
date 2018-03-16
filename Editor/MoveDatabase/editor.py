@@ -5,7 +5,7 @@ from Editor.utilities.make_var import make_str_var, make_int_var, make_combo_var
 from Editor.utilities.arrayconnector import ArrayConnector
 from Editor.guicomponents.integercheck import intValidate
 from Editor.guicomponents.listchoice import ListChoice
-from Editor.guicomponents.entrylabel_ttk import EntryLabel
+from Editor.guicomponents.entrylabel import EntryLabel
 from Editor.guicomponents.combolabel import ComboLabel
 from Editor.guicomponents.widgetgrid import WidgetGrid
 from Editor.guicomponents.variabletext import VariableText

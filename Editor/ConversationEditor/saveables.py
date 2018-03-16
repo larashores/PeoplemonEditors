@@ -1,6 +1,6 @@
 from Editor.saveable.composite import Composite
 from Editor.saveable.saveablechar import SaveableChar
-from Editor.saveable.saveableInt import saveable_int
+from Editor.saveable.saveableInt import U8, U16
 from Editor.saveable.saveableArray import array
 from Editor.saveable.saveableString import SaveableString
 from Editor.saveable.union import Union
@@ -29,8 +29,8 @@ class Options(Composite):
 
 
 class Give(Composite):
-    is_item = saveable_int('u8')
-    money_or_id = saveable_int('u16')
+    is_item = U8
+    money_or_id = U16
 
     def __str__(self):
         if self.is_item.get():
@@ -40,8 +40,8 @@ class Give(Composite):
 
 
 class Take(Composite):
-    is_item = saveable_int('u8')
-    money_or_id = saveable_int('u16')
+    is_item = U8
+    money_or_id = U16
     fail_line = SaveableString
 
     def __str__(self):

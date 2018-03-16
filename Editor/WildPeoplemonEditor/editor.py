@@ -3,7 +3,7 @@ from tkinter import ttk
 
 from utilities.arrayconnector import ArrayConnector
 from Editor.utilities.make_var import make_int_var, make_str_var
-from Editor.guicomponents.entrylabel_ttk import EntryLabel
+from Editor.guicomponents.entrylabel import EntryLabel
 from Editor.guicomponents.listchoice import ListChoice
 from Editor.guicomponents.integercheck import intValidate
 from WildPeoplemonEditor.saveables import WildPeoplemon

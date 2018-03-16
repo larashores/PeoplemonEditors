@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from Editor.guicomponents.entrylabel_ttk import EntryLabel
+from Editor.guicomponents.entrylabel import EntryLabel
 from Editor.guicomponents.integercheck import intValidate
 from Editor.guicomponents.widgetgrid import WidgetGrid
 from Editor.TrainerPeoplemonEditor.saveables import TrainerPeoplemon

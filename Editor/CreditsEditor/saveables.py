@@ -1,6 +1,5 @@
 from Editor.saveable.composite import Composite
-from Editor.saveable.saveableInt import saveable_int
-from Editor.saveable.saveableArray import array
+from Editor.saveable.saveableInt import U8, U16
 from Editor.saveable.saveableString import SaveableString
 from Editor.saveable.union import Union
 
@@ -14,10 +13,10 @@ class ImageType(SaveableString):
 
 class TextType(Composite):
     text = SaveableString
-    red = saveable_int('u8')
-    green = saveable_int('u8')
-    blue = saveable_int('u8')
-    size = saveable_int('u16')
+    red = U8
+    green = U8
+    blue = U8
+    size = U16
 
     def __str__(self):
         return 'Text ({},{}): "' + self.text.get() + '"'
@@ -29,8 +28,8 @@ class CreditType(Union):
 
 
 class Credit(Composite):
-    x = saveable_int('u8')
-    y_buf = saveable_int('u16')
+    x = U8
+    y_buf = U16
     type = CreditType
 
     def __str__(self):

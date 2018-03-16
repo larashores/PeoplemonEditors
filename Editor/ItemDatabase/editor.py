@@ -6,7 +6,7 @@ from utilities.arrayconnector import ArrayConnector
 from utilities.sortconnector import SortConnector
 from Editor.guicomponents.integercheck import intValidate
 from Editor.guicomponents.listchoice import ListChoice
-from Editor.guicomponents.entrylabel_ttk import EntryLabel
+from Editor.guicomponents.entrylabel import EntryLabel
 from Editor.guicomponents.widgetgrid import WidgetGrid
 from Editor.guicomponents.variabletext import VariableText
 from Editor.guicomponents.sortbox import SortBox
