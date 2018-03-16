@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from Editor.guicomponents.entrylabel_ttk import EntryLabel
+from Editor.guicomponents.entrylabel import EntryLabel
 from Editor.guicomponents.listchoice import ListChoice
 from Editor.guicomponents.integercheck import intValidate
 from Editor.TrainerEditor.constants import *
@@ -26,7 +26,7 @@ class BehaviorWidgetConnector:
             node_widget.steps.entry.config(textvariable=make_int_var(current.num_steps))
             node_widget.direction.config(textvariable=make_combo_var(current.direction, combo_map))
 
-    def behavior_changed(self, Type):
+    def behavior_changed(self, Type, *args):
         widget_map = {StandStillBehavior: Still, SpinInPlaceBehavior: SpinInPlace,
                       FollowPathBehavior: FollowPath, WanderBehavior: WanderFreely}
         if Type not in widget_map:
