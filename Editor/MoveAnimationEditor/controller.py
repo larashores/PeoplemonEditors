@@ -1,8 +1,11 @@
 from Editor.MoveAnimationEditor.gui.point import Point
+from Editor.MoveAnimationEditor.gui.helpmenu import HelpMenu
 from Editor.MoveAnimationEditor.runtime_models.EditorModel import EditorModel
 from Editor.MoveAnimationEditor.saveables.Frame import Frame
 from Editor.MoveAnimationEditor.saveables.saveables import Animation, AnimImage
 from Editor.MoveAnimationEditor.saveables.saveables import AnimationExport, FrameExport, PieceExport
+
+import tkinter as tk
 
 import os
 from PIL import Image
@@ -22,6 +25,7 @@ class Controller:
         menu.signal_save.connect(self.save)
         menu.signal_load.connect(self.load)
         menu.signal_new.connect(self.new)
+        menu.signal_help.connect(self.help)
 
     def add_image(self, path):
         file = open(path, 'rb')
@@ -161,6 +165,11 @@ class Controller:
         self.editor.selected = None
         self.editor.outline = None
         self.editor.winfo_toplevel().wm_title("Move Animation Editor | {}".format(anim_path))
+
+    def help(self):
+        window = tk.Toplevel()
+        help = HelpMenu(window)
+        help.pack(expand=tk.YES, fill=tk.BOTH)
 
     def save(self, animation_path):
         data = self.animation.to_byte_array()

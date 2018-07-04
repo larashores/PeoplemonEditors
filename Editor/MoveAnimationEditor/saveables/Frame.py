@@ -5,6 +5,7 @@ from Editor.MoveAnimationEditor.saveables.DrawnImage import DrawnImage
 
 
 class Frame(Composite):
+    RETURN_GET = True
     length = saveable_int('u32')
     images = array(DrawnImage)
 

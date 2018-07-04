@@ -8,7 +8,7 @@ import operator
 
 from PIL import ImageTk, Image
 
-from Editor.MoveAnimationEditor.entrylabel import EntryLabel
+from Editor.guicomponents.entrylabel import EntryLabel
 from Editor.guicomponents.CanvasPlus import CanvasPlus
 from Editor.guicomponents.integercheck import intValidate
 from Editor.guicomponents.listchoice import ListChoice
@@ -58,6 +58,7 @@ class Editor(ttk.Frame):
         self.center_side.pack(side=tk.LEFT, fill=tk.Y)
         self.frame_label.pack()
         self.frame_select.pack(fill=tk.X)
+
         self.canvas.pack()
         self.canvas.bind('<Control-Prior>', self.move_forward)
         self.canvas.bind('<Control-Next>', self.move_backward)
@@ -392,7 +393,7 @@ class Editor(ttk.Frame):
             self.outline.draw(self.canvas)
 
     def apply_transparency(self):
-        if self.selected:
+        if self.outline:
             transparency = self.trans_var.get()
             self.transparency.set(transparency)
             self.change_transparency(None)

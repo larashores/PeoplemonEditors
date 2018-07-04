@@ -10,6 +10,7 @@ from PIL import ImageTk, Image
 
 
 class DrawnImage(Composite):
+    RETURN_GET = True
     name = SaveableString
     x = saveable_int('s32')
     y = saveable_int('s32')
@@ -39,6 +40,9 @@ class DrawnImage(Composite):
         self.half_transparent_tk = None
         self.update_half_transparent = True
         self.level = None
+
+    def __str__(self):
+        return str(self.anim_img)
 
     def item_changed(self, key, *args):
         if key != 'x' and key != 'y':

@@ -8,6 +8,7 @@ from tkinter.simpledialog import askinteger
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from guicomponents.simplesavemenu import SimpleSaveMenu
 
+
 LOCATION_SAVE = 'move_animation_editor_save_path'
 LOCATION_LOAD = 'move_animation_editor_load_path'
 LOCATIONS_EXPORT = 'move_animation_editor_export_path_anim', 'move_animation_editor_export_path_texture'
@@ -29,7 +30,7 @@ class EditorMenu(SimpleSaveMenu):
         self.add_cascade(label='Edit', menu=edit)
 
         animation = tk.Menu(self, tearoff=0)
-        animation.add_command(label='Add Image', command=self._add_image)
+        animation.add_command(label='Add Image', command=self.add_image)
         animation.add_command(label='Add Frame', command=self.controller.add_frame)
         animation.add_command(label='Insert Frame', command=self.controller.insert_frame)
         animation.add_command(label='Delete Frame', command=self.controller.delete_frame)
@@ -40,7 +41,7 @@ class EditorMenu(SimpleSaveMenu):
         help.add_command(label='About', command=self.signal_about)
         self.add_cascade(label='Help', menu=help)
 
-    def _add_image(self):
+    def add_image(self):
         path = askopenfilename(title='Load from?', initialdir=load_location(LOCATION_ADD_IMAGE))
         if path:
             name = os.path.split(path)[-1]
