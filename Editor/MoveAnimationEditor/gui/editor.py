@@ -11,7 +11,7 @@ from PIL import ImageTk, Image
 from Editor.MoveAnimationEditor.entrylabel import EntryLabel
 from Editor.guicomponents.CanvasPlus import CanvasPlus
 from Editor.guicomponents.integercheck import intValidate
-from Editor.guicomponents.listchoice_2 import ListChoice
+from Editor.guicomponents.listchoice import ListChoice
 from Editor.MoveAnimationEditor.runtime_models.Outline import Outline
 from Editor.MoveAnimationEditor.saveables.DrawnImage import DrawnImage
 from Editor.guicomponents.simplemenu import SimpleMenu
@@ -159,17 +159,22 @@ class Editor(ttk.Frame):
     def on_preview_add(self, ind, anim_img):
         logging.info("Loading Image " + anim_img.name)
         img = DrawnImage(anim_img)
-        self.image_list.append(anim_img.name, img)
+        self.image_list.append(img)
         self.image_list.set_selection(-1)
 
     def on_preview_remove(self, ind, anim_img):
-        to_remove = (ind for ind, img in enumerate(self.image_list) if img[1].anim_img == anim_img)
+        to_remove = (ind for ind, img in enumerate(self.image_list) if img.anim_img == anim_img)
         for ind in to_remove:
             img = self.image_list.pop(ind)
-            img.destroy(self.preview)
+            if self.preview:
+                img.destroy(self.preview)
         self.controller.editor_model.current_frame = self.controller.editor_model.current_frame
 
     def on_preview_selected(self, ind):
+        if ind is None:
+            if self.cur_preview is not None:
+                self.cur_preview.destroy(self.preview)
+            return
         img = self.image_list[ind]
         img.scale_max(self.preview)
         img.center(self.preview)

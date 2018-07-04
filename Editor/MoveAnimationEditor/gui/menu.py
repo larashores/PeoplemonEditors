@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter.messagebox import showinfo, showerror, askokcancel, showwarning
 from tkinter.simpledialog import askinteger
 from tkinter.filedialog import askopenfilename, asksaveasfilename
+from guicomponents.simplesavemenu import SimpleSaveMenu
 
 LOCATION_SAVE = 'move_animation_editor_save_path'
 LOCATION_LOAD = 'move_animation_editor_load_path'
@@ -13,16 +14,14 @@ LOCATIONS_EXPORT = 'move_animation_editor_export_path_anim', 'move_animation_edi
 LOCATION_ADD_IMAGE = 'move_animation_editor_load_image'
 
 
-class EditorMenu(tk.Menu):
+class EditorMenu(SimpleSaveMenu):
     def __init__(self, controller):
-        tk.Menu.__init__(self)
+        SimpleSaveMenu.__init__(self, 'Animation', extension='devanim', file_type='Animation')
+        self.signal_help = Signal()
+        self.signal_about = Signal()
+
         self.controller = controller
-        file = tk.Menu(self, tearoff=0)
-        file.add_command(label='New', command=self.new)
-        file.add_command(label='Save', command=self.save)
-        file.add_command(label='Export', command=self.export)
-        file.add_command(label='Load', command=self.load)
-        self.add_cascade(label='File', menu=file)
+        self.file_menu.add_command(label='Export', command=self.export)
 
         edit = tk.Menu(self, tearoff=0)
         edit.add_command(label='Change All Frame Lengths', command=self.change_all)
@@ -35,6 +34,11 @@ class EditorMenu(tk.Menu):
         animation.add_command(label='Insert Frame', command=self.controller.insert_frame)
         animation.add_command(label='Delete Frame', command=self.controller.delete_frame)
         self.add_cascade(label='Animation', menu=animation)
+
+        help = tk.Menu(self, tearoff=0)
+        help.add_command(label='Help Topics', command=self.signal_help)
+        help.add_command(label='About', command=self.signal_about)
+        self.add_cascade(label='Help', menu=help)
 
     def _add_image(self):
         path = askopenfilename(title='Load from?', initialdir=load_location(LOCATION_ADD_IMAGE))
@@ -75,35 +79,3 @@ class EditorMenu(tk.Menu):
         except:
             showerror('Error', 'Animation not exported')
             raise
-
-    def save(self):
-        path = asksaveasfilename(title='Save Animation', initialdir=load_location(LOCATION_SAVE),
-                                 defaultextension='devanim', filetypes=[('Animation File', 'devanim')])
-        if not path:
-            return
-        try:
-            self.controller.save(path)
-            save_location({LOCATION_SAVE: os.path.split(path)[0]})
-        except:
-            showerror('Error', 'Animation not saved')
-            raise
-
-    def load(self):
-        path = askopenfilename(title='Load Animation', initialdir=load_location(LOCATION_LOAD),
-                               defaultextension='devanim', filetypes=[('Animation File', 'devanim')])
-        if not path:
-            return
-        try:
-            file = open(path, 'rb')
-            data = bytearray(file.read())
-            file.close()
-            self.controller.load(data, path)
-            save_location({LOCATION_LOAD: os.path.split(path)[0]})
-        except:
-            showerror('Error', 'Animation not loaded')
-            raise
-
-    def new(self):
-        answer = askokcancel(title='New Animation', message='Create New Animation?')
-        if answer:
-            self.controller.new()

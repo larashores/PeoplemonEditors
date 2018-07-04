@@ -6,8 +6,6 @@ from Editor.MoveAnimationEditor.saveables.saveables import AnimationExport, Fram
 
 import os
 from PIL import Image
-from tkinter.filedialog import askopenfilename
-import logging
 
 
 class Controller:
@@ -19,6 +17,11 @@ class Controller:
         self.animation = Animation()
         self.editor_model = EditorModel()
         self.animation.frames.append(Frame())
+
+    def connect_to_menu(self, menu):
+        menu.signal_save.connect(self.save)
+        menu.signal_load.connect(self.load)
+        menu.signal_new.connect(self.new)
 
     def add_image(self, path):
         file = open(path, 'rb')
@@ -147,8 +150,12 @@ class Controller:
         file.write(export.to_byte_array())
         file.close()
 
-    def load(self, anim_data, anim_path):
-        self.animation.load_in_place(anim_data, True)
+    def load(self, anim_path):
+
+        file = open(anim_path, 'rb')
+        data = bytearray(file.read())
+        file.close()
+        self.animation.load_in_place(data, True)
 
         self.editor_model.current_frame = 0
         self.editor.selected = None

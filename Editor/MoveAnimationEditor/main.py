@@ -19,6 +19,7 @@ if __name__ == '__main__':
     root.bind('<Pause>', lambda event: controller.add_frame())
     root.bind('<End>', lambda event: controller.insert_frame())
     menu = EditorMenu(controller)
+    controller.connect_to_menu(menu)
     root.config(menu=menu)
     style = ttk.Style()
     style.configure('Title.TLabel', font=('tkdefaultfont', 12, 'bold'))
